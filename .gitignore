@@ -1,0 +1,56 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Build output
+dist/
+build/
+out/
+coverage/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Dependency directories (optional caches)
+.npm/
+.pnpm-store/
+
+# Parcel / Vite / Next / other build caches
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.svelte-kit/
+.vite/
+
+# Testing
+coverage/
+
+# Misc
+*.tgz
+*.bak
+*.swp
