@@ -1,23 +1,24 @@
 const express = require("express");
-const cors = require("cors");
-
-const authRoutes = require("./routes/authRoutes");
-const cvRoutes = require("./routes/cvRoutes");
-const qrRoutes = require("./routes/qrRoutes");
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("API is running");
+});
 
-app.use("/uploads", express.static("uploads"));
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
 
-app.use("/auth", authRoutes);
-app.use("/cv", cvRoutes);
-app.use("/qr", qrRoutes);
+const pool = require("./config/db");
 
-const PORT = 3000;
+app.get("/db-test", async (req, res) => {
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    try {
+        const [rows] = await pool.query("SELECT 1 + 1 AS result");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+
 });
