@@ -1,24 +1,32 @@
 const express = require("express");
+const path = require("path");
+const pool = require("./config/db");
+
+const qrRoutes = require("./routes/qrRoutes");
 
 const app = express();
+
+// middleware
+app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// routes
+app.use("/qr", qrRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running");
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+app.get("/db-test", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT 1 + 1 AS result");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
-const pool = require("./config/db");
-
-app.get("/db-test", async (req, res) => {
-
-    try {
-        const [rows] = await pool.query("SELECT 1 + 1 AS result");
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json(err);
-    }
-
+// start server
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
 });

@@ -1,7 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-const { scanQR } = require("../controllers/qrController");
+const upload = require("../middleware/uploadMiddleware");
+
+const { scanQR, uploadCV } = require("../controllers/qrController");
+
+router.post("/upload", upload.single("cv"), uploadCV);
 
 router.get("/:token", scanQR);
 

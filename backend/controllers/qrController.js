@@ -1,4 +1,43 @@
 const pool = require("../config/db");
+const QRCode = require("qrcode");
+const { v4: uuidv4 } = require("uuid");
+
+
+exports.uploadCV = async (req, res) => {
+
+    try {
+
+        const filePath = req.file.filename;
+
+        const token = uuidv4();
+
+        const expires = new Date();
+        expires.setHours(expires.getHours() + 24);
+
+        await pool.query(
+            `INSERT INTO qr_tokens (token, file_path, expires_at)
+             VALUES (?, ?, ?)`,
+            [token, filePath, expires]
+        );
+
+        const qrUrl = `http://localhost:3000/qr/${token}`;
+
+        const qrImage = await QRCode.toDataURL(qrUrl);
+
+        res.json({
+            message: "CV uploaded",
+            qrUrl,
+            qrImage
+        });
+
+    } catch (err) {
+
+        res.status(500).json({ error: err.message });
+
+    }
+};
+
+
 
 exports.scanQR = async (req, res) => {
 
@@ -19,7 +58,7 @@ exports.scanQR = async (req, res) => {
 
         res.json({
             message: "QR valid",
-            token: rows[0]
+            cv: `/uploads/${rows[0].file_path}`
         });
 
     } catch (err) {
