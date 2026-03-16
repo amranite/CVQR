@@ -1,5 +1,29 @@
 {
   "dependencies": {
-    "dotenv": "^17.3.1"
-  }
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "qrcode": "^1.5.4"
+  },
+  "name": "cvqr",
+  "version": "1.0.0",
+  "description": "CVQR is a web app to easily share a CV with a QR code.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amranite/CVQR.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/amranite/CVQR/issues"
+  },
+  "homepage": "https://github.com/amranite/CVQR#readme"
 }
