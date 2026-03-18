@@ -12,7 +12,7 @@ exports.uploadCV = async (req, res) => {
         const token = uuidv4();
 
         const expires = new Date();
-        expires.setHours(expires.getHours() + 24);
+        expires.setHours(expires.getHours() + 72);
 
         await pool.query(
             `INSERT INTO qr_tokens (token, file_path, expires_at)

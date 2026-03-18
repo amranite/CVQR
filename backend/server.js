@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("path");
 const pool = require("./config/db");
 
+const authRoutes = require("./routes/authRoutes");
+const cvRoutes = require("./routes/cvRoutes");
 const qrRoutes = require("./routes/qrRoutes");
 
 const app = express();
@@ -11,6 +13,8 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // routes
+app.use("/auth", authRoutes);
+app.use("/cv", cvRoutes);
 app.use("/qr", qrRoutes);
 
 app.get("/", (req, res) => {
