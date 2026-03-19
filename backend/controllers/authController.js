@@ -2,7 +2,7 @@ const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const SECRET = "supersecretkey";
+const SECRET = process.env.JWT_SECRET;
 
 exports.register = async (req, res) => {
 
