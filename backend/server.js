@@ -1,3 +1,4 @@
+// Load environment variables from .env before anything else
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
@@ -9,19 +10,23 @@ const qrRoutes = require("./routes/qrRoutes");
 
 const app = express();
 
-// middleware
+// Parse incoming JSON request bodies
 app.use(express.json());
+
+// Serve uploaded CV files as static assets (e.g. GET /uploads/filename.pdf)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// routes
+// Mount route groups
 app.use("/auth", authRoutes);
 app.use("/cv", cvRoutes);
 app.use("/qr", qrRoutes);
 
+// Health check, confirms the API is reachable
 app.get("/", (req, res) => {
   res.send("API is running");
 });
 
+// DB connectivity check, runs a simple query to verify the database connection
 app.get("/db-test", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT 1 + 1 AS result");
@@ -31,7 +36,7 @@ app.get("/db-test", async (req, res) => {
   }
 });
 
-// start server
+// Start listening on port 3000
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
