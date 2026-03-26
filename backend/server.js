@@ -7,6 +7,7 @@ const pool = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const cvRoutes = require("./routes/cvRoutes");
 const qrRoutes = require("./routes/qrRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/auth", authRoutes);
 app.use("/cv", cvRoutes);
 app.use("/qr", qrRoutes);
+app.use("/admin", adminRoutes);
 
 // Health check, confirms the API is reachable
 app.get("/", (req, res) => {
