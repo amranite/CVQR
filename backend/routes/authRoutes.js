@@ -3,7 +3,8 @@ const router = express.Router();
 
 const { register, login } = require("../controllers/authController");
 
-router.post("/register", register);
-router.post("/login", login);
+// Public routes, no authentication required
+router.post("/register", register); // Create a new student or company account
+router.post("/login", login);       // Login and receive a JWT token
 
 module.exports = router;
