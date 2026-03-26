@@ -38,16 +38,17 @@ exports.getMyQR = async (req, res) => {
 };
 
 // GET /qr/:token
-// Public endpoint, no authentication required.
-// This is what a company hits after scanning a student's QR code.
-// Returns the CV file path if the token is valid and not expired.
+// Company-only endpoint. Called after a company scans a student's QR code.
+// Validates the token, logs the scan, and returns the CV download path.
 exports.scanQR = async (req, res) => {
     const { token } = req.params;
+    // req.user is the authenticated company, set by auth middleware
+    const companyId = req.user.id;
 
     try {
         // Look up the token and join to the CV, only match if not expired
         const [rows] = await pool.query(
-            `SELECT qr_tokens.*, cvs.file_path, cvs.original_name
+            `SELECT qr_tokens.*, cvs.id AS cv_id, cvs.file_path, cvs.original_name
              FROM qr_tokens
              JOIN cvs ON cvs.id = qr_tokens.cv_id
              WHERE qr_tokens.token = ?
@@ -59,10 +60,19 @@ exports.scanQR = async (req, res) => {
         if (rows.length === 0)
             return res.status(404).json({ error: "QR expired or invalid" });
 
+        const { cv_id, file_path, original_name } = rows[0];
+
+        // Log the scan so the company can retrieve this CV later via /company/scans.
+        // INSERT IGNORE prevents duplicate entries if the same company scans the same CV twice.
+        await pool.query(
+            "INSERT IGNORE INTO scan_logs (company_id, cv_id) VALUES (?, ?)",
+            [companyId, cv_id]
+        );
+
         res.json({
             message: "QR valid",
-            cv: `/uploads/${rows[0].file_path}`, // relative path to access the PDF
-            original_name: rows[0].original_name
+            cv: `/uploads/${file_path}`, // relative path to access the PDF
+            original_name
         });
 
     } catch (err) {
