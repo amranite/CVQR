@@ -1,6 +1,7 @@
 // Load environment variables from .env before anything else
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const path = require("path");
 const pool = require("./config/db");
 
@@ -11,6 +12,9 @@ const adminRoutes = require("./routes/adminRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 
 const app = express();
+
+// Allow cross-origin requests from the mobile frontend
+app.use(cors());
 
 // Parse incoming JSON request bodies
 app.use(express.json());
@@ -38,6 +42,14 @@ app.get("/db-test", async (req, res) => {
   } catch (err) {
     res.status(500).json(err);
   }
+});
+
+// Global error handler — catches errors passed via next(err) and multer rejections.
+// Must be defined after all routes so it only catches unhandled errors.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+    const status = err.status || 500;
+    res.status(status).json({ error: err.message || "Internal server error" });
 });
 
 // Start listening on port 3000

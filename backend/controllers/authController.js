@@ -12,6 +12,14 @@ exports.register = async (req, res) => {
 
     const { name, email, password } = req.body;
 
+    // Reject missing or blank fields before hitting the database
+    if (!name?.trim() || !email?.trim() || !password)
+        return res.status(400).json({ error: "name, email, and password are required" });
+
+    // Basic email format check — catches typos before they reach the DB
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        return res.status(400).json({ error: "Invalid email format" });
+
     try {
 
         // Determine role based on email domain
@@ -43,6 +51,10 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
 
     const { email, password } = req.body;
+
+    // Reject missing fields before querying the database
+    if (!email?.trim() || !password)
+        return res.status(400).json({ error: "email and password are required" });
 
     try {
 

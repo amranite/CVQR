@@ -26,6 +26,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Export the configured multer instance, routes call upload.single("cv") to activate it
-const upload = multer({ storage, fileFilter });
+// 5 MB ceiling — enough for any reasonable CV PDF
+const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
 module.exports = upload;
