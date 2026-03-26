@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVQR — Scan QR</title>
+  <link rel="stylesheet" href="styles/shared.css" />
+</head>
+<body>
+  <div class="phone camera-shell">
+    <div class="status-bar" style="background:#1c1c1e; color:#fff;"><span data-current-time>9:41</span><span>●●●</span></div>
+    <div class="nav-bar" style="background:#1c1c1e; border-color:#38383a;">
+      <span class="title" style="color:#fff;">Scan QR</span>
+      <a class="action" style="color:#fff;" href="#" data-logout>Log out</a>
+    </div>
+
+    <div class="camera-bg">
+      <div id="scanNotice" class="notice notice-info">Allow camera access and point at a student's QR code. If camera scanning is not supported, paste the token below.</div>
+      <div style="position:relative; width:240px; height:240px;">
+        <video id="scannerVideo" class="scan-video" autoplay muted playsinline></video>
+        <div class="viewfinder"></div>
+      </div>
+      <div class="scan-hint">Point your camera at a student's QR code</div>
+
+      <div class="input-group" style="width:100%; max-width:300px;">
+        <div class="label" style="color:rgba(255,255,255,.75);">Manual token</div>
+        <input id="manualToken" class="input" type="text" placeholder="Paste token here" />
+      </div>
+      <button id="scanManualButton" class="btn btn-primary" style="max-width:300px;">Open CV</button>
+    </div>
+
+    <div class="tab-bar">
+      <a class="tab" href="company-history.html"><div class="tab-icon">📋</div><span>Scanned</span></a>
+      <a class="tab active" href="company-scan.html"><div class="tab-icon">📷</div><span>Scan</span></a>
+      <a class="tab" href="#" data-logout><div class="tab-icon">👤</div><span>Logout</span></a>
+    </div>
+  </div>
+  <script src="scripts/common.js"></script>
+  <script src="scripts/company-scan.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVQR — Admin</title>
+  <link rel="stylesheet" href="styles/shared.css" />
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar"><span data-current-time>9:41</span><span>●●●</span></div>
+    <div class="nav-bar">
+      <span class="title">All CVs</span>
+      <a class="action logout-link" href="#" data-logout>Admin</a>
+    </div>
+
+    <div class="content">
+      <div id="adminNotice" class="notice hidden"></div>
+      <div id="adminCount" class="section-title">0 CVs uploaded</div>
+      <div id="adminList"></div>
+      <div id="adminEmpty" class="empty-state hidden">
+        <div class="empty-icon">🛡️</div>
+        <div class="empty-title">No CVs available</div>
+        <div class="empty-sub">Uploaded student CVs will appear here for admin review.</div>
+      </div>
+    </div>
+  </div>
+  <script src="scripts/common.js"></script>
+  <script src="scripts/admin.js"></script>
+</body>
+</html>

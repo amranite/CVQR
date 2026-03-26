@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVQR — My CV</title>
+  <link rel="stylesheet" href="styles/shared.css" />
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar"><span data-current-time>9:41</span><span>●●●</span></div>
+    <div class="nav-bar">
+      <span class="title">My CV</span>
+      <a class="action logout-link" href="#" data-logout>Log out</a>
+    </div>
+
+    <div class="content">
+      <div id="studentNotice" class="notice hidden"></div>
+
+      <section id="emptyState" class="hidden">
+        <div class="empty-state">
+          <div class="empty-icon">📂</div>
+          <div class="empty-title">No CV uploaded yet</div>
+          <div class="empty-sub">Upload your CV to generate a QR code you can share at the event.</div>
+        </div>
+        <label class="upload-zone" for="uploadInput">
+          <div class="upload-icon" style="font-size:36px;">⬆️</div>
+          <span>Tap to upload a PDF</span>
+          <span class="text-muted" style="font-size:12px;">Max 5 MB</span>
+        </label>
+      </section>
+
+      <section id="cvState" class="hidden">
+        <div class="section-title">Uploaded CV</div>
+        <div class="card">
+          <div class="card-row"><span class="card-label">File</span><span id="cvFileName" class="card-value">—</span></div>
+          <div class="card-row"><span class="card-label">Uploaded</span><span id="cvUploadedAt" class="card-value">—</span></div>
+          <div class="card-row"><span class="card-label">QR expires</span><span id="cvExpiresAt" class="card-value" style="color:var(--warning)">—</span></div>
+        </div>
+
+        <div class="section-title">Your QR Code</div>
+        <div class="qr-box"><img id="qrImage" alt="QR code" /></div>
+        <div class="text-muted text-center">Companies scan this to view your CV</div>
+
+        <div class="row">
+          <label class="btn btn-secondary" for="replaceInput">Replace CV</label>
+          <button id="deleteCvButton" class="btn btn-danger">Delete CV</button>
+        </div>
+        <a id="openCvLink" class="btn btn-outline" href="#" target="_blank" rel="noopener">Open current CV</a>
+      </section>
+
+      <input id="uploadInput" type="file" accept="application/pdf" class="hidden" />
+      <input id="replaceInput" type="file" accept="application/pdf" class="hidden" />
+    </div>
+
+    <div class="tab-bar">
+      <a class="tab active" href="student.html"><div class="tab-icon">📄</div><span>My CV</span></a>
+      <a class="tab" href="#" data-logout><div class="tab-icon">👤</div><span>Logout</span></a>
+    </div>
+  </div>
+  <script src="scripts/common.js"></script>
+  <script src="scripts/student.js"></script>
+</body>
+</html>
