@@ -23,7 +23,7 @@ exports.getMyQR = async (req, res) => {
             return res.status(404).json({ error: "No QR code found" });
 
         // Build the URL the QR code encodes and generate the image
-        const qrUrl = `http://localhost:3000/qr/${rows[0].token}`;
+        const qrUrl = `${process.env.BASE_URL}/qr/${rows[0].token}`;
         const qrImage = await QRCode.toDataURL(qrUrl);
 
         res.json({

@@ -38,7 +38,7 @@ exports.uploadCV = async (req, res) => {
         );
 
         // Build the public URL that the QR code will point to
-        const qrUrl = `http://localhost:3000/qr/${token}`;
+        const qrUrl = `${process.env.BASE_URL}/qr/${token}`;
 
         // Generate a QR code image as a base64 data URL
         const qrImage = await QRCode.toDataURL(qrUrl);
@@ -52,6 +52,10 @@ exports.uploadCV = async (req, res) => {
         });
 
     } catch (err) {
+        // If the DB insert failed after multer saved the file, clean up the orphaned file
+        if (req.file) {
+            fs.unlink(path.join(__dirname, "../uploads", req.file.filename), () => {});
+        }
         res.status(500).json({ error: err.message });
     }
 };
@@ -131,7 +135,7 @@ exports.replaceCV = async (req, res) => {
             fs.unlink(path.join(__dirname, "../uploads", oldFilePath), () => {});
         }
 
-        const qrUrl = `http://localhost:3000/qr/${token}`;
+        const qrUrl = `${process.env.BASE_URL}/qr/${token}`;
         const qrImage = await QRCode.toDataURL(qrUrl);
 
         res.json({

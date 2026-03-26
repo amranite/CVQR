@@ -40,6 +40,10 @@ exports.register = async (req, res) => {
 
     } catch (err) {
 
+        // MySQL duplicate entry error — email already taken
+        if (err.code === "ER_DUP_ENTRY")
+            return res.status(409).json({ error: "An account with this email already exists" });
+
         res.status(500).json({ error: err.message });
 
     }

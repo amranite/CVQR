@@ -20,6 +20,9 @@ app.use(cors());
 app.use(express.json());
 
 // Serve uploaded CV files as static assets (e.g. GET /uploads/filename.pdf)
+// NOTE: files are intentionally public for this prototype — any client with the
+// filename can download a CV without authentication. For a production deployment,
+// replace this with a signed-URL or authenticated file endpoint.
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Mount route groups
