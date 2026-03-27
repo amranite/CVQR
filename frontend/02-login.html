@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVQR — Login</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+
+    <div class="content" style="justify-content: center; padding-top: 64px;">
+
+      <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:24px;">
+        <div style="font-size:40px;">📄</div>
+        <div style="font-size:26px; font-weight:700;">Welcome back</div>
+      </div>
+
+      <div id="message" class="hidden"></div>
+
+      <form id="loginForm" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="input-group">
+          <div class="label">Email</div>
+          <input id="email" class="input" type="email" placeholder="jane@school.com" required />
+        </div>
+
+        <div class="input-group">
+          <div class="label">Password</div>
+          <input id="password" class="input" type="password" placeholder="••••••••" required />
+        </div>
+
+        <button id="submitBtn" class="btn btn-primary" style="margin-top:8px;" type="submit">Log In</button>
+      </form>
+
+      <div id="registerLink" class="text-link">Don't have an account? Sign up</div>
+
+    </div>
+  </div>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script>
+    const messageEl = document.getElementById('message');
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    document.getElementById('registerLink').addEventListener('click', () => {
+      window.location.href = '01-register.html';
+    });
+
+    const existingToken = CVQR.getToken();
+    const existingRole = CVQR.getRole();
+    if (existingToken && existingRole) {
+      if (existingRole === 'student') window.location.href = '03-student-home.html';
+      if (existingRole === 'company') window.location.href = '05-company-scanner.html';
+      if (existingRole === 'admin') window.location.href = '08-admin-cv-list.html';
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      CVQR.showMessage(messageEl, '', true);
+      submitBtn.disabled = true;
+
+      try {
+        const data = await CVQR.jsonRequest('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value
+          })
+        });
+
+        CVQR.setToken(data.token);
+        const payload = CVQR.parseJwt(data.token) || {};
+        CVQR.setRole(payload.role || '');
+
+        if (payload.role === 'student') {
+          window.location.href = '03-student-home.html';
+        } else if (payload.role === 'company') {
+          window.location.href = '05-company-scanner.html';
+        } else if (payload.role === 'admin') {
+          window.location.href = '08-admin-cv-list.html';
+        } else {
+          CVQR.showMessage(messageEl, 'Login worked, but role was missing.', true);
+        }
+      } catch (error) {
+        CVQR.showMessage(messageEl, error.message || 'Login failed', true);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

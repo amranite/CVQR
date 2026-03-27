@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVQR — Student Home</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+
+    <div class="nav-bar">
+      <span class="title">My CV</span>
+      <span id="logoutAction" class="action" style="font-size:13px; color:#8e8e93;">Log out</span>
+    </div>
+
+    <div class="content">
+      <div id="message" class="hidden"></div>
+
+      <div class="empty-state">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">No CV uploaded yet</div>
+        <div class="empty-sub">Upload your CV to generate a QR code you can share at the event.</div>
+      </div>
+
+      <label class="upload-zone" for="cvFile">
+        <div class="upload-icon">⬆️</div>
+        <span>Tap to upload a PDF</span>
+        <span class="text-muted" style="font-size:12px;">Max 5 MB</span>
+      </label>
+      <input id="cvFile" class="file-input" type="file" accept="application/pdf" />
+
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab active">
+        <div class="tab-icon">📄</div>
+        <span>My CV</span>
+      </div>
+      <div id="profileTab" class="tab">
+        <div class="tab-icon">👤</div>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script>
+    if (CVQR.requireRole('student', '02-login.html')) {
+      document.getElementById('logoutAction').addEventListener('click', () => {
+        CVQR.clearSession();
+        window.location.href = '02-login.html';
+      });
+
+      document.getElementById('profileTab').addEventListener('click', () => {
+        CVQR.clearSession();
+        window.location.href = '02-login.html';
+      });
+
+      const messageEl = document.getElementById('message');
+      const fileInput = document.getElementById('cvFile');
+
+      async function checkExistingCV() {
+        try {
+          await CVQR.jsonRequest('/cv/me', {
+            headers: CVQR.authHeaders()
+          });
+          window.location.href = '04-student-cv.html';
+        } catch (error) {
+          if (!/No CV found/i.test(error.message)) {
+            CVQR.showMessage(messageEl, error.message, true);
+          }
+        }
+      }
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('cv', file);
+        try {
+          CVQR.showMessage(messageEl, '', true);
+          const response = await fetch(`${CVQR.apiBase()}/cv/upload`, {
+            method: 'POST',
+            headers: CVQR.authHeaders(),
+            body: formData
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Upload failed');
+          window.location.href = '04-student-cv.html';
+        } catch (error) {
+          CVQR.showMessage(messageEl, error.message, true);
+          fileInput.value = '';
+        }
+      });
+
+      checkExistingCV();
+    }
+  </script>
+</body>
+</html>

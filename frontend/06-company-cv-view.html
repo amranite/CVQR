@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CVQR — Company CV View</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>●●●</span>
+    </div>
+
+    <div class="nav-bar">
+      <span id="backBtn" class="back">‹ Scan</span>
+      <span class="title">CV Preview</span>
+    </div>
+
+    <div class="content">
+      <div id="message" class="hidden"></div>
+
+      <div class="card">
+        <div class="card-row">
+          <span class="card-label">Student</span>
+          <span id="studentName" class="card-value">Jane Doe</span>
+        </div>
+        <div class="card-row">
+          <span class="card-label">Email</span>
+          <span id="studentEmail" class="card-value">jane@school.com</span>
+        </div>
+        <div class="card-row">
+          <span class="card-label">File</span>
+          <span id="fileName" class="card-value">Jane_Doe_CV.pdf</span>
+        </div>
+      </div>
+
+      <div id="previewBox" class="pdf-preview">
+        <span style="font-size:40px;">📄</span>
+        <span>PDF Preview</span>
+      </div>
+
+      <button id="downloadBtn" class="btn btn-primary">⬇ Download CV</button>
+
+    </div>
+
+    <div class="tab-bar">
+      <div id="historyTab" class="tab">
+        <div class="tab-icon">📋</div>
+        <span>Scanned</span>
+      </div>
+      <div id="scanTab" class="tab active">
+        <div class="tab-icon">📷</div>
+        <span>Scan</span>
+      </div>
+      <div id="profileTab" class="tab">
+        <div class="tab-icon">👤</div>
+        <span>Profile</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script>
+    if (CVQR.requireRole('company', '02-login.html')) {
+      const messageEl = document.getElementById('message');
+      const previewBox = document.getElementById('previewBox');
+      const saved = localStorage.getItem('cvqr_last_scan');
+      const payload = saved ? JSON.parse(saved) : null;
+
+      function absoluteCvUrl(relativePath) {
+        if (!relativePath) return '';
+        if (relativePath.startsWith('http')) return relativePath;
+        return `${CVQR.apiBase()}${relativePath}`;
+      }
+
+      document.getElementById('backBtn').addEventListener('click', () => {
+        window.location.href = '05-company-scanner.html';
+      });
+      document.getElementById('historyTab').addEventListener('click', () => {
+        window.location.href = '07-company-scan-history.html';
+      });
+      document.getElementById('scanTab').addEventListener('click', () => {
+        window.location.href = '05-company-scanner.html';
+      });
+      document.getElementById('profileTab').addEventListener('click', () => {
+        CVQR.clearSession();
+        window.location.href = '02-login.html';
+      });
+
+      if (!payload || !payload.scan) {
+        CVQR.showMessage(messageEl, 'No scanned CV found yet. Scan a QR code first.', true);
+      } else {
+        const scan = payload.scan;
+        const history = payload.history || {};
+        const downloadUrl = absoluteCvUrl(scan.cv);
+        document.getElementById('studentName').textContent = history.student_name || 'Student';
+        document.getElementById('studentEmail').textContent = history.student_email || '—';
+        document.getElementById('fileName').textContent = scan.original_name || history.original_name || 'CV.pdf';
+        previewBox.innerHTML = `<iframe src="${downloadUrl}"></iframe>`;
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+          window.open(downloadUrl, '_blank');
+        });
+      }
+    }
+  </script>
+</body>
+</html>

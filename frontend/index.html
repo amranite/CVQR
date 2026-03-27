@@ -3,14 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVQR</title>
-  <script>
-    const role = localStorage.getItem("cvqr_role");
-    if (role === "student") location.replace("student.html");
-    else if (role === "company") location.replace("company-scan.html");
-    else if (role === "admin") location.replace("admin.html");
-    else location.replace("login.html");
-  </script>
+  <title>CVQR Frontend</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f2f2f7;
+      padding: 40px 24px;
+      color: #000;
+    }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 15px; color: #8e8e93; margin-bottom: 32px; }
+    .group { margin-bottom: 32px; }
+    .group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6c6c70;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    a.card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      text-decoration: none;
+      color: #000;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .card-icon { font-size: 28px; }
+    .card-name { font-size: 15px; font-weight: 600; }
+    .card-desc { font-size: 13px; color: #8e8e93; }
+  </style>
 </head>
-<body></body>
+<body>
+  <h1>CVQR Frontend</h1>
+  <p class="subtitle">Wireframe-matched screens connected to the API.</p>
+
+  <div class="group">
+    <div class="group-title">Auth</div>
+    <div class="grid">
+      <a class="card" href="01-register.html"><div class="card-icon">📝</div><div class="card-name">Register</div><div class="card-desc">Create a student or company account</div></a>
+      <a class="card" href="02-login.html"><div class="card-icon">🔐</div><div class="card-name">Login</div><div class="card-desc">Get a JWT and enter the app</div></a>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Student</div>
+    <div class="grid">
+      <a class="card" href="03-student-home.html"><div class="card-icon">📂</div><div class="card-name">Student Home</div><div class="card-desc">Upload a CV when none exists</div></a>
+      <a class="card" href="04-student-cv.html"><div class="card-icon">📄</div><div class="card-name">Student CV</div><div class="card-desc">View QR, replace or delete CV</div></a>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Company</div>
+    <div class="grid">
+      <a class="card" href="05-company-scanner.html"><div class="card-icon">📷</div><div class="card-name">Scanner</div><div class="card-desc">Scan or paste a QR token</div></a>
+      <a class="card" href="07-company-scan-history.html"><div class="card-icon">📋</div><div class="card-name">History</div><div class="card-desc">See scanned CVs</div></a>
+      <a class="card" href="06-company-cv-view.html"><div class="card-icon">👁</div><div class="card-name">CV View</div><div class="card-desc">Preview and download a scanned CV</div></a>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-title">Admin</div>
+    <div class="grid">
+      <a class="card" href="08-admin-cv-list.html"><div class="card-icon">🛡</div><div class="card-name">All CVs</div><div class="card-desc">List and delete uploaded CVs</div></a>
+    </div>
+  </div>
+</body>
 </html>
