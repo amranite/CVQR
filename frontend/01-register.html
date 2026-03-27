@@ -1,93 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVQR — Register</title>
-  <link rel="stylesheet" href="shared.css" />
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>CVQR - Register</title>
+   <link rel="stylesheet" href="shared.css" />
 </head>
+
 <body>
-  <div class="phone">
-    <div class="status-bar">
-      <span>9:41</span>
-      <span>●●●</span>
-    </div>
-
-    <div class="content" style="justify-content: center; padding-top: 48px;">
-
-      <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:16px;">
-        <div style="font-size:40px;">📄</div>
-        <div style="font-size:26px; font-weight:700;">CVQR</div>
-        <div class="text-muted text-center">Share your CV with a QR code</div>
+   <div class="phone">
+      <div class="status-bar">
+         <span>9:41</span>
+         <span>●●●</span>
       </div>
 
-      <div id="message" class="hidden"></div>
+      <div class="content" style="justify-content: center; padding-top: 48px;">
 
-      <form id="registerForm" style="display:flex; flex-direction:column; gap:16px;">
-        <div class="input-group">
-          <div class="label">Full Name</div>
-          <input id="name" class="input" type="text" placeholder="Jane Doe" required />
-        </div>
+         <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:16px;">
+            <div style="font-size:40px;">📄</div>
+            <div style="font-size:26px; font-weight:700;">CVQR</div>
+            <div class="text-muted text-center">Share your CV with a QR code</div>
+         </div>
 
-        <div class="input-group">
-          <div class="label">Email</div>
-          <input id="email" class="input" type="email" placeholder="jane@school.com" required />
-          <div class="text-muted" style="font-size:12px; margin-top:6px;">
-            Use your <strong>@school.com</strong> email to register as a student.
-          </div>
-        </div>
+         <div id="message" class="hidden"></div>
 
-        <div class="input-group">
-          <div class="label">Password</div>
-          <input id="password" class="input" type="password" placeholder="••••••••" required />
-        </div>
+         <form id="registerForm" style="display:flex; flex-direction:column; gap:16px;">
+            <div class="input-group">
+               <div class="label">Full Name</div>
+               <input id="name" class="input" type="text" placeholder="Jane Doe" required />
+            </div>
 
-        <button id="submitBtn" class="btn btn-primary" style="margin-top:8px;" type="submit">Create Account</button>
-      </form>
+            <div class="input-group">
+               <div class="label">Email</div>
+               <input id="email" class="input" type="email" placeholder="jane@school.com" required />
+               <div class="text-muted" style="font-size:12px; margin-top:6px;">
+                  Use your <strong>@school.com</strong> email to register as a student.
+               </div>
+            </div>
 
-      <div id="loginLink" class="text-link">Already have an account? Log in</div>
+            <div class="input-group">
+               <div class="label">Password</div>
+               <input id="password" class="input" type="password" placeholder="••••••••" required />
+            </div>
 
-    </div>
-  </div>
+            <button id="submitBtn" class="btn btn-primary" style="margin-top:8px;" type="submit">Create Account</button>
+         </form>
 
-  <script src="scripts/config.js"></script>
-  <script src="scripts/utils.js"></script>
-  <script>
-    const messageEl = document.getElementById('message');
-    const form = document.getElementById('registerForm');
-    const submitBtn = document.getElementById('submitBtn');
+         <div id="loginLink" class="text-link">Already have an account? Log in</div>
 
-    document.getElementById('loginLink').addEventListener('click', () => {
-      window.location.href = '02-login.html';
-    });
+      </div>
+   </div>
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      CVQR.showMessage(messageEl, '', true);
-      submitBtn.disabled = true;
+   <script src="scripts/config.js"></script>
+   <script src="scripts/utils.js"></script>
+   <script>
+      const messageEl = document.getElementById('message');
+      const form = document.getElementById('registerForm');
+      const submitBtn = document.getElementById('submitBtn');
 
-      try {
-        await CVQR.jsonRequest('/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: document.getElementById('name').value.trim(),
-            email: document.getElementById('email').value.trim(),
-            password: document.getElementById('password').value
-          })
-        });
+      document.getElementById('loginLink').addEventListener('click', () => {
+         window.location.href = '02-login.html';
+      });
 
-        CVQR.showMessage(messageEl, 'Account created. You can log in now.', false);
-        form.reset();
-        setTimeout(() => {
-          window.location.href = '02-login.html';
-        }, 900);
-      } catch (error) {
-        CVQR.showMessage(messageEl, error.message || 'Registration failed', true);
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-  </script>
+      form.addEventListener('submit', async (event) => {
+         event.preventDefault();
+         CVQR.showMessage(messageEl, '', true);
+         submitBtn.disabled = true;
+
+         try {
+            await CVQR.jsonRequest('/auth/register', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                  name: document.getElementById('name').value.trim(),
+                  email: document.getElementById('email').value.trim(),
+                  password: document.getElementById('password').value
+               })
+            });
+
+            CVQR.showMessage(messageEl, 'Account created. You can log in now.', false);
+            form.reset();
+            setTimeout(() => {
+               window.location.href = '02-login.html';
+            }, 900);
+         } catch (error) {
+            CVQR.showMessage(messageEl, error.message || 'Registration failed', true);
+         } finally {
+            submitBtn.disabled = false;
+         }
+      });
+   </script>
 </body>
+
 </html>

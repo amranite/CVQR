@@ -1,54 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVQR — Admin CV List</title>
-  <link rel="stylesheet" href="shared.css" />
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>CVQR - Admin CV List</title>
+   <link rel="stylesheet" href="shared.css" />
 </head>
+
 <body>
-  <div class="phone">
-    <div class="status-bar">
-      <span>9:41</span>
-      <span>●●●</span>
-    </div>
+   <div class="phone">
+      <div class="status-bar">
+         <span>9:41</span>
+         <span>●●●</span>
+      </div>
 
-    <div class="nav-bar">
-      <span class="title">All CVs</span>
-      <span id="logoutAction" class="action" style="color:#8e8e93; font-size:13px;">Admin</span>
-    </div>
+      <div class="nav-bar">
+         <span class="title">All CVs</span>
+         <span id="logoutAction" class="action" style="color:#8e8e93; font-size:13px;">Admin</span>
+      </div>
 
-    <div class="content">
-      <div id="message" class="hidden"></div>
-      <div id="countLabel" class="section-title">0 CVs uploaded</div>
-      <div id="list"></div>
-    </div>
-  </div>
+      <div class="content">
+         <div id="message" class="hidden"></div>
+         <div id="countLabel" class="section-title">0 CVs uploaded</div>
+         <div id="list"></div>
+      </div>
+   </div>
 
-  <script src="scripts/config.js"></script>
-  <script src="scripts/utils.js"></script>
-  <script>
-    if (CVQR.requireRole('admin', '02-login.html')) {
-      const messageEl = document.getElementById('message');
-      const list = document.getElementById('list');
-      const countLabel = document.getElementById('countLabel');
+   <script src="scripts/config.js"></script>
+   <script src="scripts/utils.js"></script>
+   <script>
+      if (CVQR.requireRole('admin', '02-login.html')) {
+         const messageEl = document.getElementById('message');
+         const list = document.getElementById('list');
+         const countLabel = document.getElementById('countLabel');
 
-      document.getElementById('logoutAction').addEventListener('click', () => {
-        CVQR.clearSession();
-        window.location.href = '02-login.html';
-      });
+         document.getElementById('logoutAction').addEventListener('click', () => {
+            CVQR.clearSession();
+            window.location.href = '02-login.html';
+         });
 
-      async function loadCVs() {
-        try {
-          const rows = await CVQR.jsonRequest('/admin/cvs', {
-            headers: CVQR.authHeaders()
-          });
-          countLabel.textContent = `${rows.length} CV${rows.length === 1 ? '' : 's'} uploaded`;
-          if (!rows.length) {
-            list.innerHTML = '<div class="empty-state"><div class="empty-icon">🛡</div><div class="empty-title">No CVs uploaded</div><div class="empty-sub">Student uploads will appear here.</div></div>';
-            return;
-          }
-          list.innerHTML = rows.map((row, index) => `
+         async function loadCVs() {
+            try {
+               const rows = await CVQR.jsonRequest('/admin/cvs', {
+                  headers: CVQR.authHeaders()
+               });
+               countLabel.textContent = `${rows.length} CV${rows.length === 1 ? '' : 's'} uploaded`;
+               if (!rows.length) {
+                  list.innerHTML = '<div class="empty-state"><div class="empty-icon">🛡</div><div class="empty-title">No CVs uploaded</div><div class="empty-sub">Student uploads will appear here.</div></div>';
+                  return;
+               }
+               list.innerHTML = rows.map((row, index) => `
             <div class="list-item">
               <div class="list-item-left">
                 <span class="list-item-name">${row.name}</span>
@@ -58,29 +60,30 @@
             </div>
           `).join('');
 
-          list.querySelectorAll('[data-index]').forEach((button) => {
-            button.addEventListener('click', async () => {
-              const row = rows[Number(button.dataset.index)];
-              if (!window.confirm(`Delete ${row.name}'s CV?`)) return;
-              try {
-                await CVQR.jsonRequest(`/admin/cv/${row.student_id}`, {
-                  method: 'DELETE',
-                  headers: CVQR.authHeaders()
-                });
-                CVQR.showMessage(messageEl, 'CV deleted.', false);
-                loadCVs();
-              } catch (error) {
-                CVQR.showMessage(messageEl, error.message, true);
-              }
-            });
-          });
-        } catch (error) {
-          CVQR.showMessage(messageEl, error.message, true);
-        }
-      }
+               list.querySelectorAll('[data-index]').forEach((button) => {
+                  button.addEventListener('click', async () => {
+                     const row = rows[Number(button.dataset.index)];
+                     if (!window.confirm(`Delete ${row.name}'s CV?`)) return;
+                     try {
+                        await CVQR.jsonRequest(`/admin/cv/${row.student_id}`, {
+                           method: 'DELETE',
+                           headers: CVQR.authHeaders()
+                        });
+                        CVQR.showMessage(messageEl, 'CV deleted.', false);
+                        loadCVs();
+                     } catch (error) {
+                        CVQR.showMessage(messageEl, error.message, true);
+                     }
+                  });
+               });
+            } catch (error) {
+               CVQR.showMessage(messageEl, error.message, true);
+            }
+         }
 
-      loadCVs();
-    }
-  </script>
+         loadCVs();
+      }
+   </script>
 </body>
+
 </html>

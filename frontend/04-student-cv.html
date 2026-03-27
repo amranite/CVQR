@@ -1,142 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVQR — Student CV</title>
-  <link rel="stylesheet" href="shared.css" />
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>CVQR - Student CV</title>
+   <link rel="stylesheet" href="shared.css" />
 </head>
+
 <body>
-  <div class="phone">
-    <div class="status-bar">
-      <span>9:41</span>
-      <span>●●●</span>
-    </div>
-
-    <div class="nav-bar">
-      <span class="title">My CV</span>
-      <span id="logoutAction" class="action" style="font-size:13px; color:#8e8e93;">Log out</span>
-    </div>
-
-    <div class="content">
-      <div id="message" class="hidden"></div>
-
-      <div class="section-title">Uploaded CV</div>
-      <div class="card">
-        <div class="card-row">
-          <span class="card-label">File</span>
-          <span id="fileName" class="card-value">Jane_Doe_CV.pdf</span>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Uploaded</span>
-          <span id="uploadedAt" class="card-value">Mar 26, 2026</span>
-        </div>
-        <div class="card-row">
-          <span class="card-label">QR expires</span>
-          <span id="expiresAt" class="card-value" style="color:#ff9500;">Mar 29 · 9:41 AM</span>
-        </div>
+   <div class="phone">
+      <div class="status-bar">
+         <span>9:41</span>
+         <span>●●●</span>
       </div>
 
-      <div class="section-title">Your QR Code</div>
-      <div id="qrBox" class="qr-placeholder">QR Image</div>
-      <div class="text-muted text-center">Companies scan this to view your CV</div>
-
-      <button id="replaceBtn" class="btn btn-secondary">Replace CV</button>
-      <input id="replaceInput" class="file-input" type="file" accept="application/pdf" />
-      <button id="deleteBtn" class="btn btn-danger">Delete CV</button>
-
-    </div>
-
-    <div class="tab-bar">
-      <div class="tab active">
-        <div class="tab-icon">📄</div>
-        <span>My CV</span>
+      <div class="nav-bar">
+         <span class="title">My CV</span>
+         <span id="logoutAction" class="action" style="font-size:13px; color:#8e8e93;">Log out</span>
       </div>
-      <div id="profileTab" class="tab">
-        <div class="tab-icon">👤</div>
-        <span>Profile</span>
+
+      <div class="content">
+         <div id="message" class="hidden"></div>
+
+         <div class="section-title">Uploaded CV</div>
+         <div class="card">
+            <div class="card-row">
+               <span class="card-label">File</span>
+               <span id="fileName" class="card-value">Jane_Doe_CV.pdf</span>
+            </div>
+            <div class="card-row">
+               <span class="card-label">Uploaded</span>
+               <span id="uploadedAt" class="card-value">Mar 26, 2026</span>
+            </div>
+            <div class="card-row">
+               <span class="card-label">QR expires</span>
+               <span id="expiresAt" class="card-value" style="color:#ff9500;">Mar 29 · 9:41 AM</span>
+            </div>
+         </div>
+
+         <div class="section-title">Your QR Code</div>
+         <div id="qrBox" class="qr-placeholder">QR Image</div>
+         <div class="text-muted text-center">Companies scan this to view your CV</div>
+
+         <button id="replaceBtn" class="btn btn-secondary">Replace CV</button>
+         <input id="replaceInput" class="file-input" type="file" accept="application/pdf" />
+         <button id="deleteBtn" class="btn btn-danger">Delete CV</button>
+
       </div>
-    </div>
-  </div>
 
-  <script src="scripts/config.js"></script>
-  <script src="scripts/utils.js"></script>
-  <script>
-    if (CVQR.requireRole('student', '02-login.html')) {
-      const messageEl = document.getElementById('message');
-      const qrBox = document.getElementById('qrBox');
+      <div class="tab-bar">
+         <div class="tab active">
+            <div class="tab-icon">📄</div>
+            <span>My CV</span>
+         </div>
+         <div id="profileTab" class="tab">
+            <div class="tab-icon">👤</div>
+            <span>Profile</span>
+         </div>
+      </div>
+   </div>
 
-      document.getElementById('logoutAction').addEventListener('click', () => {
-        CVQR.clearSession();
-        window.location.href = '02-login.html';
-      });
+   <script src="scripts/config.js"></script>
+   <script src="scripts/utils.js"></script>
+   <script>
+      if (CVQR.requireRole('student', '02-login.html')) {
+         const messageEl = document.getElementById('message');
+         const qrBox = document.getElementById('qrBox');
 
-      document.getElementById('profileTab').addEventListener('click', () => {
-        CVQR.clearSession();
-        window.location.href = '02-login.html';
-      });
+         document.getElementById('logoutAction').addEventListener('click', () => {
+            CVQR.clearSession();
+            window.location.href = '02-login.html';
+         });
 
-      async function loadCV() {
-        try {
-          const [cv, qr] = await Promise.all([
-            CVQR.jsonRequest('/cv/me', { headers: CVQR.authHeaders() }),
-            CVQR.jsonRequest('/qr/me', { headers: CVQR.authHeaders() })
-          ]);
+         document.getElementById('profileTab').addEventListener('click', () => {
+            CVQR.clearSession();
+            window.location.href = '02-login.html';
+         });
 
-          document.getElementById('fileName').textContent = cv.original_name || 'CV.pdf';
-          document.getElementById('uploadedAt').textContent = CVQR.formatDate(cv.updated_at || cv.uploaded_at);
-          document.getElementById('expiresAt').textContent = CVQR.formatDateTime(qr.expires_at);
-          qrBox.innerHTML = `<img src="${qr.qrImage}" alt="QR code" />`;
-        } catch (error) {
-          if (/No CV found|No QR code found/i.test(error.message)) {
-            window.location.href = '03-student-home.html';
-            return;
-          }
-          CVQR.showMessage(messageEl, error.message, true);
-        }
+         async function loadCV() {
+            try {
+               const [cv, qr] = await Promise.all([
+                  CVQR.jsonRequest('/cv/me', { headers: CVQR.authHeaders() }),
+                  CVQR.jsonRequest('/qr/me', { headers: CVQR.authHeaders() })
+               ]);
+
+               document.getElementById('fileName').textContent = cv.original_name || 'CV.pdf';
+               document.getElementById('uploadedAt').textContent = CVQR.formatDate(cv.updated_at || cv.uploaded_at);
+               document.getElementById('expiresAt').textContent = CVQR.formatDateTime(qr.expires_at);
+               qrBox.innerHTML = `<img src="${qr.qrImage}" alt="QR code" />`;
+            } catch (error) {
+               if (/No CV found|No QR code found/i.test(error.message)) {
+                  window.location.href = '03-student-home.html';
+                  return;
+               }
+               CVQR.showMessage(messageEl, error.message, true);
+            }
+         }
+
+         document.getElementById('replaceBtn').addEventListener('click', () => {
+            document.getElementById('replaceInput').click();
+         });
+
+         document.getElementById('replaceInput').addEventListener('change', async function () {
+            const file = this.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('cv', file);
+            try {
+               const response = await fetch(`${CVQR.apiBase()}/cv`, {
+                  method: 'PUT',
+                  headers: CVQR.authHeaders(),
+                  body: formData
+               });
+               const data = await response.json();
+               if (!response.ok) throw new Error(data.error || 'Replace failed');
+               await loadCV();
+               CVQR.showMessage(messageEl, 'CV replaced successfully.', false);
+            } catch (error) {
+               CVQR.showMessage(messageEl, error.message, true);
+            } finally {
+               this.value = '';
+            }
+         });
+
+         document.getElementById('deleteBtn').addEventListener('click', async () => {
+            if (!window.confirm('Delete your current CV?')) return;
+            try {
+               await CVQR.jsonRequest('/cv', {
+                  method: 'DELETE',
+                  headers: CVQR.authHeaders()
+               });
+               window.location.href = '03-student-home.html';
+            } catch (error) {
+               CVQR.showMessage(messageEl, error.message, true);
+            }
+         });
+
+         loadCV();
       }
-
-      document.getElementById('replaceBtn').addEventListener('click', () => {
-        document.getElementById('replaceInput').click();
-      });
-
-      document.getElementById('replaceInput').addEventListener('change', async function () {
-        const file = this.files[0];
-        if (!file) return;
-        const formData = new FormData();
-        formData.append('cv', file);
-        try {
-          const response = await fetch(`${CVQR.apiBase()}/cv`, {
-            method: 'PUT',
-            headers: CVQR.authHeaders(),
-            body: formData
-          });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || 'Replace failed');
-          await loadCV();
-          CVQR.showMessage(messageEl, 'CV replaced successfully.', false);
-        } catch (error) {
-          CVQR.showMessage(messageEl, error.message, true);
-        } finally {
-          this.value = '';
-        }
-      });
-
-      document.getElementById('deleteBtn').addEventListener('click', async () => {
-        if (!window.confirm('Delete your current CV?')) return;
-        try {
-          await CVQR.jsonRequest('/cv', {
-            method: 'DELETE',
-            headers: CVQR.authHeaders()
-          });
-          window.location.href = '03-student-home.html';
-        } catch (error) {
-          CVQR.showMessage(messageEl, error.message, true);
-        }
-      });
-
-      loadCV();
-    }
-  </script>
+   </script>
 </body>
+
 </html>

@@ -1,76 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVQR — Company Scan History</title>
-  <link rel="stylesheet" href="shared.css" />
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>CVQR - Company Scan History</title>
+   <link rel="stylesheet" href="shared.css" />
 </head>
+
 <body>
-  <div class="phone">
-    <div class="status-bar">
-      <span>9:41</span>
-      <span>●●●</span>
-    </div>
-
-    <div class="nav-bar">
-      <span class="title">Scanned CVs</span>
-      <span id="logoutAction" class="action" style="font-size:13px; color:#8e8e93;">Log out</span>
-    </div>
-
-    <div class="content">
-      <div id="message" class="hidden"></div>
-      <div id="countLabel" class="section-title">0 CVs collected</div>
-      <div id="list"></div>
-    </div>
-
-    <div class="tab-bar">
-      <div class="tab active">
-        <div class="tab-icon">📋</div>
-        <span>Scanned</span>
+   <div class="phone">
+      <div class="status-bar">
+         <span>9:41</span>
+         <span>●●●</span>
       </div>
-      <div id="scanTab" class="tab">
-        <div class="tab-icon">📷</div>
-        <span>Scan</span>
+
+      <div class="nav-bar">
+         <span class="title">Scanned CVs</span>
+         <span id="logoutAction" class="action" style="font-size:13px; color:#8e8e93;">Log out</span>
       </div>
-      <div id="profileTab" class="tab">
-        <div class="tab-icon">👤</div>
-        <span>Profile</span>
+
+      <div class="content">
+         <div id="message" class="hidden"></div>
+         <div id="countLabel" class="section-title">0 CVs collected</div>
+         <div id="list"></div>
       </div>
-    </div>
-  </div>
 
-  <script src="scripts/config.js"></script>
-  <script src="scripts/utils.js"></script>
-  <script>
-    if (CVQR.requireRole('company', '02-login.html')) {
-      const messageEl = document.getElementById('message');
-      const list = document.getElementById('list');
-      const countLabel = document.getElementById('countLabel');
+      <div class="tab-bar">
+         <div class="tab active">
+            <div class="tab-icon">📋</div>
+            <span>Scanned</span>
+         </div>
+         <div id="scanTab" class="tab">
+            <div class="tab-icon">📷</div>
+            <span>Scan</span>
+         </div>
+         <div id="profileTab" class="tab">
+            <div class="tab-icon">👤</div>
+            <span>Profile</span>
+         </div>
+      </div>
+   </div>
 
-      document.getElementById('scanTab').addEventListener('click', () => {
-        window.location.href = '05-company-scanner.html';
-      });
-      document.getElementById('profileTab').addEventListener('click', () => {
-        CVQR.clearSession();
-        window.location.href = '02-login.html';
-      });
-      document.getElementById('logoutAction').addEventListener('click', () => {
-        CVQR.clearSession();
-        window.location.href = '02-login.html';
-      });
+   <script src="scripts/config.js"></script>
+   <script src="scripts/utils.js"></script>
+   <script>
+      if (CVQR.requireRole('company', '02-login.html')) {
+         const messageEl = document.getElementById('message');
+         const list = document.getElementById('list');
+         const countLabel = document.getElementById('countLabel');
 
-      async function loadHistory() {
-        try {
-          const rows = await CVQR.jsonRequest('/company/scans', {
-            headers: CVQR.authHeaders()
-          });
-          countLabel.textContent = `${rows.length} CV${rows.length === 1 ? '' : 's'} collected`;
-          if (!rows.length) {
-            list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No scans yet</div><div class="empty-sub">Scan a student QR code to collect CVs here.</div></div>';
-            return;
-          }
-          list.innerHTML = rows.map((row, index) => `
+         document.getElementById('scanTab').addEventListener('click', () => {
+            window.location.href = '05-company-scanner.html';
+         });
+         document.getElementById('profileTab').addEventListener('click', () => {
+            CVQR.clearSession();
+            window.location.href = '02-login.html';
+         });
+         document.getElementById('logoutAction').addEventListener('click', () => {
+            CVQR.clearSession();
+            window.location.href = '02-login.html';
+         });
+
+         async function loadHistory() {
+            try {
+               const rows = await CVQR.jsonRequest('/company/scans', {
+                  headers: CVQR.authHeaders()
+               });
+               countLabel.textContent = `${rows.length} CV${rows.length === 1 ? '' : 's'} collected`;
+               if (!rows.length) {
+                  list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No scans yet</div><div class="empty-sub">Scan a student QR code to collect CVs here.</div></div>';
+                  return;
+               }
+               list.innerHTML = rows.map((row, index) => `
             <div class="list-item">
               <div class="list-item-left">
                 <span class="list-item-name">${row.student_name}</span>
@@ -80,26 +82,27 @@
             </div>
           `).join('');
 
-          list.querySelectorAll('[data-index]').forEach((button) => {
-            button.addEventListener('click', () => {
-              const row = rows[Number(button.dataset.index)];
-              localStorage.setItem('cvqr_last_scan', JSON.stringify({
-                scan: {
-                  cv: row.cv,
-                  original_name: row.original_name
-                },
-                history: row
-              }));
-              window.location.href = '06-company-cv-view.html';
-            });
-          });
-        } catch (error) {
-          CVQR.showMessage(messageEl, error.message, true);
-        }
-      }
+               list.querySelectorAll('[data-index]').forEach((button) => {
+                  button.addEventListener('click', () => {
+                     const row = rows[Number(button.dataset.index)];
+                     localStorage.setItem('cvqr_last_scan', JSON.stringify({
+                        scan: {
+                           cv: row.cv,
+                           original_name: row.original_name
+                        },
+                        history: row
+                     }));
+                     window.location.href = '06-company-cv-view.html';
+                  });
+               });
+            } catch (error) {
+               CVQR.showMessage(messageEl, error.message, true);
+            }
+         }
 
-      loadHistory();
-    }
-  </script>
+         loadHistory();
+      }
+   </script>
 </body>
+
 </html>
