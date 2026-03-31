@@ -1,83 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVQR Frontend</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f2f2f7;
-      padding: 40px 24px;
-      color: #000;
-    }
-    h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { font-size: 15px; color: #8e8e93; margin-bottom: 32px; }
-    .group { margin-bottom: 32px; }
-    .group-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #6c6c70;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
-    }
-    a.card {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: #fff;
-      border-radius: 14px;
-      padding: 16px;
-      text-decoration: none;
-      color: #000;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
-    .card-icon { font-size: 28px; }
-    .card-name { font-size: 15px; font-weight: 600; }
-    .card-desc { font-size: 13px; color: #8e8e93; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Start</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
 </head>
 <body>
-  <h1>CVQR Frontend</h1>
-  <p class="subtitle">Wireframe-matched screens connected to the API.</p>
-
-  <div class="group">
-    <div class="group-title">Auth</div>
-    <div class="grid">
-      <a class="card" href="01-register.html"><div class="card-icon">📝</div><div class="card-name">Register</div><div class="card-desc">Create a student or company account</div></a>
-      <a class="card" href="02-login.html"><div class="card-icon">🔐</div><div class="card-name">Login</div><div class="card-desc">Get a JWT and enter the app</div></a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-file-lines"></i>
+        <div>
+          <h1>CVQR</h1>
+          <p>Studenten en bedrijven verbinden via QR.</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="01-register.html">Registreren</a>
+        <a class="button" href="02-login.html">Inloggen</a>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <div class="group">
-    <div class="group-title">Student</div>
-    <div class="grid">
-      <a class="card" href="03-student-home.html"><div class="card-icon">📂</div><div class="card-name">Student Home</div><div class="card-desc">Upload a CV when none exists</div></a>
-      <a class="card" href="04-student-cv.html"><div class="card-icon">📄</div><div class="card-name">Student CV</div><div class="card-desc">View QR, replace or delete CV</div></a>
-    </div>
-  </div>
+  <main class="container page-main">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Lokaal project</span>
+        <h2>CV delen en bekijken via QR</h2>
+        <p>Studenten uploaden hun CV, krijgen een QR-code en bedrijven kunnen die scannen om de PDF te openen.</p>
+        <div class="hero-actions">
+          <a class="button" href="01-register.html">Start met registreren</a>
+          <a class="button button-secondary" href="02-login.html">Ga naar login</a>
+        </div>
+      </div>
+      <div class="card card-highlight">
+        <h3>Beschikbare schermen</h3>
+        <ul class="feature-list">
+          <li><i class="fa-solid fa-user-plus"></i> Registreren</li>
+          <li><i class="fa-solid fa-right-to-bracket"></i> Inloggen</li>
+          <li><i class="fa-solid fa-file-arrow-up"></i> Student CV uploaden</li>
+          <li><i class="fa-solid fa-qrcode"></i> Student QR bekijken</li>
+          <li><i class="fa-solid fa-building"></i> Company scan en historiek</li>
+          <li><i class="fa-solid fa-shield-halved"></i> Admin overzicht</li>
+        </ul>
+      </div>
+    </section>
 
-  <div class="group">
-    <div class="group-title">Company</div>
-    <div class="grid">
-      <a class="card" href="05-company-scanner.html"><div class="card-icon">📷</div><div class="card-name">Scanner</div><div class="card-desc">Scan or paste a QR token</div></a>
-      <a class="card" href="07-company-scan-history.html"><div class="card-icon">📋</div><div class="card-name">History</div><div class="card-desc">See scanned CVs</div></a>
-      <a class="card" href="06-company-cv-view.html"><div class="card-icon">👁</div><div class="card-name">CV View</div><div class="card-desc">Preview and download a scanned CV</div></a>
-    </div>
-  </div>
-
-  <div class="group">
-    <div class="group-title">Admin</div>
-    <div class="grid">
-      <a class="card" href="08-admin-cv-list.html"><div class="card-icon">🛡</div><div class="card-name">All CVs</div><div class="card-desc">List and delete uploaded CVs</div></a>
-    </div>
-  </div>
+    <section class="grid cards-grid">
+      <article class="card nav-card">
+        <i class="fa-solid fa-user-plus"></i>
+        <h3>Register</h3>
+        <p>Maak een student- of companyaccount aan.</p>
+        <a href="01-register.html">Open pagina</a>
+      </article>
+      <article class="card nav-card">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <h3>Login</h3>
+        <p>Log in en stuur de gebruiker door volgens rol.</p>
+        <a href="02-login.html">Open pagina</a>
+      </article>
+      <article class="card nav-card">
+        <i class="fa-solid fa-file-arrow-up"></i>
+        <h3>Student home</h3>
+        <p>Upload een CV als er nog geen CV aanwezig is.</p>
+        <a href="03-student-home.html">Open pagina</a>
+      </article>
+      <article class="card nav-card">
+        <i class="fa-solid fa-qrcode"></i>
+        <h3>Student CV</h3>
+        <p>Bekijk gegevens, QR, link en token.</p>
+        <a href="04-student-cv.html">Open pagina</a>
+      </article>
+      <article class="card nav-card">
+        <i class="fa-solid fa-camera"></i>
+        <h3>Company scanner</h3>
+        <p>Scan met camera, laad een QR-afbeelding of gebruik een token.</p>
+        <a href="05-company-scanner.html">Open pagina</a>
+      </article>
+      <article class="card nav-card">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <h3>Scan history</h3>
+        <p>Bekijk alle gescande CV's per bedrijf.</p>
+        <a href="07-company-scan-history.html">Open pagina</a>
+      </article>
+      <article class="card nav-card">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h3>Admin lijst</h3>
+        <p>Overzicht van alle uploads met verwijderknop.</p>
+        <a href="08-admin-cv-list.html">Open pagina</a>
+      </article>
+    </section>
+  </main>
 </body>
 </html>

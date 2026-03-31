@@ -7,6 +7,8 @@ const pool = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const cvRoutes = require("./routes/cvRoutes");
 const qrRoutes = require("./routes/qrRoutes");
+const companyRoutes = require("./routes/companyRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/auth", authRoutes);
 app.use("/cv", cvRoutes);
 app.use("/qr", qrRoutes);
+app.use("/company", companyRoutes);
+app.use("/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running");

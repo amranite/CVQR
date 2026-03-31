@@ -1,175 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="nl">
 <head>
-   <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>CVQR - Company QR Scanner</title>
-   <link rel="stylesheet" href="shared.css" />
-   <style>
-      .camera-bg {
-         background: #1c1c1e;
-         flex: 1;
-         display: flex;
-         flex-direction: column;
-         align-items: center;
-         justify-content: center;
-         gap: 24px;
-         padding: 32px 20px;
-      }
-
-      .scan-hint {
-         color: rgba(255, 255, 255, 0.75);
-         font-size: 15px;
-         text-align: center;
-      }
-   </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Company scanner</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
 </head>
-
 <body>
-   <div class="phone">
-      <div class="status-bar" style="background:#1c1c1e; color:#fff;">
-         <span>9:41</span>
-         <span>●●●</span>
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-building"></i>
+        <div>
+          <h1>Company scanner</h1>
+          <p>Scan een QR-code, laad een afbeelding of gebruik een token.</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="07-company-scan-history.html">Historiek</a>
+        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main two-column wide-left">
+    <section class="card">
+      <h2>QR scanner</h2>
+      <p class="section-text">Geef cameratoegang om live te scannen. Als dat niet lukt, kies een QR-afbeelding of plak een token.</p>
+      <div id="message" class="message hidden"></div>
+
+      <div class="scanner-box">
+        <video id="cameraVideo" class="scanner-video hidden" autoplay playsinline muted></video>
+        <div id="cameraPlaceholder" class="scanner-placeholder">
+          <i class="fa-solid fa-camera"></i>
+          <p>Camera nog niet gestart</p>
+        </div>
       </div>
 
-      <div class="nav-bar" style="background:#1c1c1e; border-color:#38383a;">
-         <span class="title" style="color:#fff;">Scan QR</span>
-         <span id="logoutAction" class="action" style="color:rgba(255,255,255,0.7); font-size:13px;">Log out</span>
+      <canvas id="scannerCanvas" class="hidden"></canvas>
+      <input type="file" id="imageInput" accept="image/*" capture="environment" class="hidden">
+
+      <div class="button-row scanner-actions">
+        <button type="button" class="button" id="startCameraButton">Camera starten</button>
+        <button type="button" class="button button-secondary" id="stopCameraButton">Camera stoppen</button>
+        <button type="button" class="button button-secondary" id="pickImageButton">QR-afbeelding kiezen</button>
       </div>
+    </section>
 
-      <div class="camera-bg">
-         <div class="viewfinder" id="viewfinder">
-            <span id="viewfinderText">Camera feed</span>
-            <video id="cameraVideo" class="hidden" autoplay playsinline muted></video>
-         </div>
+    <section class="card aside-card">
+      <h2>Token of URL</h2>
+      <form id="scanForm" class="stack-form">
+        <div>
+          <label for="token">QR token of URL</label>
+          <input type="text" id="token" name="token" placeholder="http://localhost:3000/qr/... of enkel de token" required>
+        </div>
+        <div class="button-row">
+          <button type="submit" class="button">Open CV</button>
+        </div>
+      </form>
 
-         <div class="scan-hint">
-            Point your camera at a student's QR code
-         </div>
+      <h2 class="scanner-help-title">Na het scannen</h2>
+      <ul class="feature-list compact-list">
+        <li><i class="fa-solid fa-circle-check"></i> Geldige token toont studentgegevens.</li>
+        <li><i class="fa-solid fa-clock-rotate-left"></i> De scan komt in de historiek van het bedrijf.</li>
+        <li><i class="fa-solid fa-file-arrow-down"></i> Je kan de PDF openen en downloaden.</li>
+      </ul>
+    </section>
+  </main>
 
-         <div id="message" class="hidden" style="width:100%;"></div>
-
-         <div class="camera-actions">
-            <input id="tokenInput" class="dark-input" type="text" placeholder="Paste QR URL or token" />
-            <button id="scanBtn" class="btn btn-primary" type="button">Open CV</button>
-            <button id="cameraBtn" class="btn btn-secondary" type="button">Enable Camera</button>
-         </div>
-      </div>
-
-      <div class="tab-bar">
-         <div id="historyTab" class="tab">
-            <div class="tab-icon">📋</div>
-            <span>Scanned</span>
-         </div>
-         <div class="tab active">
-            <div class="tab-icon">📷</div>
-            <span>Scan</span>
-         </div>
-         <div id="profileTab" class="tab">
-            <div class="tab-icon">👤</div>
-            <span>Profile</span>
-         </div>
-      </div>
-   </div>
-
-   <script src="scripts/config.js"></script>
-   <script src="scripts/utils.js"></script>
-   <script>
-      if (CVQR.requireRole('company', '02-login.html')) {
-         const messageEl = document.getElementById('message');
-         const tokenInput = document.getElementById('tokenInput');
-         const video = document.getElementById('cameraVideo');
-         const viewfinderText = document.getElementById('viewfinderText');
-         let stream = null;
-         let scanInterval = null;
-
-         function extractToken(value) {
-            const trimmed = (value || '').trim();
-            if (!trimmed) return '';
-            if (trimmed.includes('/qr/')) {
-               const parts = trimmed.split('/qr/');
-               return parts[1].split(/[?#]/)[0];
-            }
-            return trimmed;
-         }
-
-         async function openCVByToken(rawValue) {
-            const token = extractToken(rawValue);
-            if (!token) {
-               CVQR.showMessage(messageEl, 'Paste a QR URL or token first.', true);
-               return;
-            }
-            try {
-               const scanned = await CVQR.jsonRequest(`/qr/${token}`, {
-                  headers: CVQR.authHeaders()
-               });
-               const history = await CVQR.jsonRequest('/company/scans', {
-                  headers: CVQR.authHeaders()
-               });
-               const matched = history.find((item) => item.cv === scanned.cv) || history[0] || null;
-               localStorage.setItem('cvqr_last_scan', JSON.stringify({
-                  token,
-                  scan: scanned,
-                  history: matched
-               }));
-               window.location.href = '06-company-cv-view.html';
-            } catch (error) {
-               CVQR.showMessage(messageEl, error.message, true);
-            }
-         }
-
-         async function enableCamera() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-               CVQR.showMessage(messageEl, 'Camera is not supported in this browser.', true);
-               return;
-            }
-            try {
-               stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-               video.srcObject = stream;
-               video.classList.remove('hidden');
-               viewfinderText.classList.add('hidden');
-               CVQR.showMessage(messageEl, 'Camera enabled. Paste token if auto-scan is unavailable.', false);
-
-               if ('BarcodeDetector' in window) {
-                  const detector = new BarcodeDetector({ formats: ['qr_code'] });
-                  scanInterval = setInterval(async () => {
-                     try {
-                        const codes = await detector.detect(video);
-                        if (codes && codes.length > 0 && codes[0].rawValue) {
-                           clearInterval(scanInterval);
-                           await openCVByToken(codes[0].rawValue);
-                        }
-                     } catch (error) {
-                        clearInterval(scanInterval);
-                     }
-                  }, 1000);
-               }
-            } catch (error) {
-               CVQR.showMessage(messageEl, 'Could not access the camera. You can still paste the token manually.', true);
-            }
-         }
-
-         document.getElementById('scanBtn').addEventListener('click', () => openCVByToken(tokenInput.value));
-         document.getElementById('cameraBtn').addEventListener('click', enableCamera);
-         document.getElementById('historyTab').addEventListener('click', () => window.location.href = '07-company-scan-history.html');
-         document.getElementById('profileTab').addEventListener('click', () => {
-            CVQR.clearSession();
-            window.location.href = '02-login.html';
-         });
-         document.getElementById('logoutAction').addEventListener('click', () => {
-            CVQR.clearSession();
-            window.location.href = '02-login.html';
-         });
-
-         window.addEventListener('beforeunload', () => {
-            if (scanInterval) clearInterval(scanInterval);
-            if (stream) {
-               stream.getTracks().forEach((track) => track.stop());
-            }
-         });
-      }
-   </script>
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/company-scan.js"></script>
 </body>
-
 </html>

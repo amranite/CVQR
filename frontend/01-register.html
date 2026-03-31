@@ -1,96 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-   <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>CVQR - Register</title>
-   <link rel="stylesheet" href="shared.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Register</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
 </head>
-
 <body>
-   <div class="phone">
-      <div class="status-bar">
-         <span>9:41</span>
-         <span>●●●</span>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-file-lines"></i>
+        <div>
+          <h1>CVQR</h1>
+          <p>Registreren</p>
+        </div>
       </div>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="index.html">Start</a>
+        <a class="button" href="02-login.html">Login</a>
+      </nav>
+    </div>
+  </header>
 
-      <div class="content" style="justify-content: center; padding-top: 48px;">
+  <main class="container page-main narrow-page">
+    <section class="card form-card">
+      <h2>Account aanmaken</h2>
+      <p class="section-text">Gebruik een <strong>@school.com</strong> adres voor een studentaccount. Andere adressen worden als company geregistreerd.</p>
+      <div id="message" class="message hidden"></div>
+      <form id="registerForm" class="stack-form">
+        <div>
+          <label for="name">Naam</label>
+          <input type="text" id="name" name="name" placeholder="Jane Doe" required>
+        </div>
+        <div>
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="jane@school.com" required>
+        </div>
+        <div>
+          <label for="password">Wachtwoord</label>
+          <input type="password" id="password" name="password" placeholder="Minstens 8 tekens" required>
+        </div>
+        <div class="button-row">
+          <button type="submit" class="button">Account maken</button>
+          <a class="button button-secondary" href="02-login.html">Ik heb al een account</a>
+        </div>
+      </form>
+    </section>
+  </main>
 
-         <div style="display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:16px;">
-            <div style="font-size:40px;">📄</div>
-            <div style="font-size:26px; font-weight:700;">CVQR</div>
-            <div class="text-muted text-center">Share your CV with a QR code</div>
-         </div>
-
-         <div id="message" class="hidden"></div>
-
-         <form id="registerForm" style="display:flex; flex-direction:column; gap:16px;">
-            <div class="input-group">
-               <div class="label">Full Name</div>
-               <input id="name" class="input" type="text" placeholder="Jane Doe" required />
-            </div>
-
-            <div class="input-group">
-               <div class="label">Email</div>
-               <input id="email" class="input" type="email" placeholder="jane@school.com" required />
-               <div class="text-muted" style="font-size:12px; margin-top:6px;">
-                  Use your <strong>@school.com</strong> email to register as a student.
-               </div>
-            </div>
-
-            <div class="input-group">
-               <div class="label">Password</div>
-               <input id="password" class="input" type="password" placeholder="••••••••" required />
-            </div>
-
-            <button id="submitBtn" class="btn btn-primary" style="margin-top:8px;" type="submit">Create Account</button>
-         </form>
-
-         <div id="loginLink" class="text-link">Already have an account? Log in</div>
-
-      </div>
-   </div>
-
-   <script src="scripts/config.js"></script>
-   <script src="scripts/utils.js"></script>
-   <script>
-      const messageEl = document.getElementById('message');
-      const form = document.getElementById('registerForm');
-      const submitBtn = document.getElementById('submitBtn');
-
-      document.getElementById('loginLink').addEventListener('click', () => {
-         window.location.href = '02-login.html';
-      });
-
-      form.addEventListener('submit', async (event) => {
-         event.preventDefault();
-         CVQR.showMessage(messageEl, '', true);
-         submitBtn.disabled = true;
-
-         try {
-            await CVQR.jsonRequest('/auth/register', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({
-                  name: document.getElementById('name').value.trim(),
-                  email: document.getElementById('email').value.trim(),
-                  password: document.getElementById('password').value
-               })
-            });
-
-            CVQR.showMessage(messageEl, 'Account created. You can log in now.', false);
-            form.reset();
-            setTimeout(() => {
-               window.location.href = '02-login.html';
-            }, 900);
-         } catch (error) {
-            CVQR.showMessage(messageEl, error.message || 'Registration failed', true);
-         } finally {
-            submitBtn.disabled = false;
-         }
-      });
-   </script>
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/register.js"></script>
 </body>
-
 </html>

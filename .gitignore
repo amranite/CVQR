@@ -19,7 +19,8 @@ dist/
 build/
 out/
 coverage/
-uploads/
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Temporary files
 tmp/

@@ -1,89 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-   <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>CVQR - Admin CV List</title>
-   <link rel="stylesheet" href="shared.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Admin CV overzicht</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
 </head>
-
 <body>
-   <div class="phone">
-      <div class="status-bar">
-         <span>9:41</span>
-         <span>●●●</span>
+
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div>
+          <h1>Admin overzicht</h1>
+          <p>Alle geüploade CV's op één plaats.</p>
+        </div>
       </div>
+      <nav class="header-actions">
+        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+      </nav>
+    </div>
+  </header>
 
-      <div class="nav-bar">
-         <span class="title">All CVs</span>
-         <span id="logoutAction" class="action" style="color:#8e8e93; font-size:13px;">Admin</span>
+  <main class="container page-main">
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>CV lijst</h2>
+          <p id="cvCount" class="section-text">0 resultaten</p>
+        </div>
       </div>
+      <div id="message" class="message hidden"></div>
+      <div id="cvList" class="card-list"></div>
+    </section>
+  </main>
 
-      <div class="content">
-         <div id="message" class="hidden"></div>
-         <div id="countLabel" class="section-title">0 CVs uploaded</div>
-         <div id="list"></div>
-      </div>
-   </div>
-
-   <script src="scripts/config.js"></script>
-   <script src="scripts/utils.js"></script>
-   <script>
-      if (CVQR.requireRole('admin', '02-login.html')) {
-         const messageEl = document.getElementById('message');
-         const list = document.getElementById('list');
-         const countLabel = document.getElementById('countLabel');
-
-         document.getElementById('logoutAction').addEventListener('click', () => {
-            CVQR.clearSession();
-            window.location.href = '02-login.html';
-         });
-
-         async function loadCVs() {
-            try {
-               const rows = await CVQR.jsonRequest('/admin/cvs', {
-                  headers: CVQR.authHeaders()
-               });
-               countLabel.textContent = `${rows.length} CV${rows.length === 1 ? '' : 's'} uploaded`;
-               if (!rows.length) {
-                  list.innerHTML = '<div class="empty-state"><div class="empty-icon">🛡</div><div class="empty-title">No CVs uploaded</div><div class="empty-sub">Student uploads will appear here.</div></div>';
-                  return;
-               }
-               list.innerHTML = rows.map((row, index) => `
-            <div class="list-item">
-              <div class="list-item-left">
-                <span class="list-item-name">${row.name}</span>
-                <span class="list-item-sub">${row.email} · ${CVQR.formatDate(row.uploaded_at)}</span>
-              </div>
-              <span class="badge badge-red" data-index="${index}" style="cursor:pointer;">Delete</span>
-            </div>
-          `).join('');
-
-               list.querySelectorAll('[data-index]').forEach((button) => {
-                  button.addEventListener('click', async () => {
-                     const row = rows[Number(button.dataset.index)];
-                     if (!window.confirm(`Delete ${row.name}'s CV?`)) return;
-                     try {
-                        await CVQR.jsonRequest(`/admin/cv/${row.student_id}`, {
-                           method: 'DELETE',
-                           headers: CVQR.authHeaders()
-                        });
-                        CVQR.showMessage(messageEl, 'CV deleted.', false);
-                        loadCVs();
-                     } catch (error) {
-                        CVQR.showMessage(messageEl, error.message, true);
-                     }
-                  });
-               });
-            } catch (error) {
-               CVQR.showMessage(messageEl, error.message, true);
-            }
-         }
-
-         loadCVs();
-      }
-   </script>
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/admin-cv-list.js"></script>
 </body>
-
 </html>
