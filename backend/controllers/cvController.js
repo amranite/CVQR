@@ -1,6 +1,8 @@
 const pool = require("../config/db");
 const QRCode = require("qrcode");
 const { v4: uuidv4 } = require("uuid");
+const fs = require("fs");
+const path = require("path");
 
 // POST /cv/upload
 // Handles the full CV upload flow for a student:
@@ -36,7 +38,7 @@ exports.uploadCV = async (req, res) => {
         );
 
         // Build the public URL that the QR code will point to
-        const qrUrl = `http://localhost:3000/qr/${token}`;
+        const qrUrl = `${process.env.BASE_URL}/qr/${token}`;
 
         // Generate a QR code image as a base64 data URL
         const qrImage = await QRCode.toDataURL(qrUrl);
@@ -50,6 +52,10 @@ exports.uploadCV = async (req, res) => {
         });
 
     } catch (err) {
+        // If the DB insert failed after multer saved the file, clean up the orphaned file
+        if (req.file) {
+            fs.unlink(path.join(__dirname, "../uploads", req.file.filename), () => {});
+        }
         res.status(500).json({ error: err.message });
     }
 };
@@ -105,6 +111,13 @@ exports.replaceCV = async (req, res) => {
 
         const cvId = existing[0].id;
 
+        // Fetch the old file path before overwriting, so we can clean it up from disk
+        const [oldCV] = await pool.query(
+            "SELECT file_path FROM cvs WHERE id = ?",
+            [cvId]
+        );
+        const oldFilePath = oldCV[0]?.file_path;
+
         // Update the CV record with the new file details
         await pool.query(
             "UPDATE cvs SET file_path = ?, original_name = ?, updated_at = NOW() WHERE id = ?",
@@ -117,7 +130,12 @@ exports.replaceCV = async (req, res) => {
             [token, expires, cvId]
         );
 
-        const qrUrl = `http://localhost:3000/qr/${token}`;
+        // Remove the old PDF from disk now that the DB is updated
+        if (oldFilePath) {
+            fs.unlink(path.join(__dirname, "../uploads", oldFilePath), () => {});
+        }
+
+        const qrUrl = `${process.env.BASE_URL}/qr/${token}`;
         const qrImage = await QRCode.toDataURL(qrUrl);
 
         res.json({
@@ -133,20 +151,27 @@ exports.replaceCV = async (req, res) => {
 };
 
 // DELETE /cv
-// Deletes the student's CV. The associated QR token is removed automatically
-// via the ON DELETE CASCADE foreign key set on the qr_tokens table.
+// Deletes the student's CV and removes the file from disk.
+// The associated QR token is removed automatically via ON DELETE CASCADE.
 exports.deleteCV = async (req, res) => {
     try {
         const studentId = req.user.id;
 
-        const [result] = await pool.query(
-            "DELETE FROM cvs WHERE user_id = ?",
+        // Fetch the file path before deleting so we can remove it from disk
+        const [existing] = await pool.query(
+            "SELECT file_path FROM cvs WHERE user_id = ?",
             [studentId]
         );
 
-        // affectedRows === 0 means no CV existed for this student
-        if (result.affectedRows === 0)
+        if (existing.length === 0)
             return res.status(404).json({ error: "No CV found" });
+
+        const filePath = existing[0].file_path;
+
+        await pool.query("DELETE FROM cvs WHERE user_id = ?", [studentId]);
+
+        // Remove the PDF from disk after the DB row is gone
+        fs.unlink(path.join(__dirname, "../uploads", filePath), () => {});
 
         res.json({ message: "CV deleted" });
 
