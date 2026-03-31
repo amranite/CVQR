@@ -1,13 +1,35 @@
 const pool = require("../config/db");
+const fs = require("fs");
+const path = require("path");
+
+function deleteFileIfExists(fileName) {
+    return new Promise((resolve, reject) => {
+        const fullPath = path.join(__dirname, "..", "uploads", fileName);
+
+        fs.unlink(fullPath, (err) => {
+            if (err && err.code !== "ENOENT") {
+                reject(err);
+                return;
+            }
+
+            resolve();
+        });
+    });
+}
 
 // GET /admin/cvs
-// Returns all CVs in the system with the owning student's name and email.
-// Useful for event oversight — admins can see every CV that has been uploaded.
-exports.listAllCVs = async (req, res) => {
+exports.getAllCvs = async (req, res) => {
     try {
         const [rows] = await pool.query(
-            `SELECT cvs.id, cvs.original_name, cvs.uploaded_at,
-                    users.id AS student_id, users.name, users.email
+            `SELECT
+                cvs.id AS cv_id,
+                cvs.user_id AS student_id,
+                users.name,
+                users.email,
+                cvs.original_name,
+                cvs.uploaded_at,
+                cvs.updated_at,
+                CONCAT('/uploads/', cvs.file_path) AS cv
              FROM cvs
              JOIN users ON users.id = cvs.user_id
              ORDER BY cvs.uploaded_at DESC`
@@ -20,23 +42,29 @@ exports.listAllCVs = async (req, res) => {
     }
 };
 
-// DELETE /admin/cv/:userId
-// Deletes the CV belonging to the given student.
-// The associated QR token is removed automatically via ON DELETE CASCADE.
-exports.deleteCVByUser = async (req, res) => {
-    try {
-        const { userId } = req.params;
+// DELETE /admin/cv/:studentId
+exports.deleteStudentCv = async (req, res) => {
+    const { studentId } = req.params;
 
-        const [result] = await pool.query(
-            "DELETE FROM cvs WHERE user_id = ?",
-            [userId]
+    try {
+        const [rows] = await pool.query(
+            "SELECT id, file_path FROM cvs WHERE user_id = ?",
+            [studentId]
         );
 
-        // affectedRows === 0 means the student either doesn't exist or has no CV
-        if (result.affectedRows === 0)
-            return res.status(404).json({ error: "No CV found for this user" });
+        if (rows.length === 0)
+            return res.status(404).json({ error: "No CV found" });
 
-        res.json({ message: "CV deleted by admin" });
+        await pool.query(
+            "DELETE FROM cvs WHERE user_id = ?",
+            [studentId]
+        );
+
+        for (const row of rows) {
+            await deleteFileIfExists(row.file_path);
+        }
+
+        res.json({ message: "CV deleted" });
 
     } catch (err) {
         res.status(500).json({ error: err.message });

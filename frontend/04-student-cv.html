@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Mijn CV</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-user-graduate"></i>
+        <div>
+          <h1>Mijn CV</h1>
+          <p>Bekijk je upload, QR-code, link en token.</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="03-student-home.html">Upload</a>
+        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main two-column">
+    <section class="card">
+      <h2>CV gegevens</h2>
+      <div id="message" class="message hidden"></div>
+      <dl class="info-list">
+        <div><dt>Bestandsnaam</dt><dd id="fileName">-</dd></div>
+        <div><dt>Geüpload op</dt><dd id="uploadedAt">-</dd></div>
+        <div><dt>Laatst aangepast</dt><dd id="updatedAt">-</dd></div>
+        <div><dt>QR vervalt op</dt><dd id="expiresAt">-</dd></div>
+      </dl>
+      <div class="button-row">
+        <a id="downloadLink" class="button button-secondary" href="#" target="_blank" rel="noopener">Open CV</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>QR-code</h2>
+      <div class="qr-box">
+        <img id="qrImage" src="" alt="QR-code van het CV">
+      </div>
+      <div class="token-box">
+        <p><strong>QR URL</strong></p>
+        <p id="qrUrl" class="token-value">-</p>
+      </div>
+      <div class="token-box">
+        <p><strong>QR token</strong></p>
+        <p id="qrToken" class="token-value">-</p>
+      </div>
+      <form id="replaceForm" class="stack-form" enctype="multipart/form-data">
+        <div>
+          <label for="newCv">Nieuwe PDF</label>
+          <input type="file" id="newCv" name="cv" accept=".pdf,application/pdf" required>
+        </div>
+        <div class="button-row">
+          <button type="submit" class="button">CV vervangen</button>
+          <button type="button" id="deleteButton" class="button button-danger">CV verwijderen</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/student-cv.js"></script>
+</body>
+</html>

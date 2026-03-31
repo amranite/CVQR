@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Scan historiek</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-building"></i>
+        <div>
+          <h1>Scan historiek</h1>
+          <p>Overzicht van alle CV's die dit bedrijf heeft geopend.</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="05-company-scanner.html">Scanner</a>
+        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main">
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Historiek</h2>
+          <p id="historyCount" class="section-text">0 resultaten</p>
+        </div>
+      </div>
+      <div id="message" class="message hidden"></div>
+      <div id="historyList" class="card-list"></div>
+    </section>
+  </main>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/company-history.js"></script>
+</body>
+</html>

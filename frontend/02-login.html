@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Login</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-file-lines"></i>
+        <div>
+          <h1>CVQR</h1>
+          <p>Login</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="index.html">Start</a>
+        <a class="button" href="01-register.html">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main narrow-page">
+    <section class="card form-card">
+      <h2>Inloggen</h2>
+      <p class="section-text">Na login word je automatisch doorgestuurd volgens je rol.</p>
+      <div id="message" class="message hidden"></div>
+      <form id="loginForm" class="stack-form">
+        <div>
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="naam@school.com" required>
+        </div>
+        <div>
+          <label for="password">Wachtwoord</label>
+          <input type="password" id="password" name="password" placeholder="Wachtwoord" required>
+        </div>
+        <div class="button-row">
+          <button type="submit" class="button">Inloggen</button>
+          <a class="button button-secondary" href="01-register.html">Nog geen account</a>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/login.js"></script>
+</body>
+</html>

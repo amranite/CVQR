@@ -1,14 +1,14 @@
 const pool = require("../config/db");
 const QRCode = require("qrcode");
+const jwt = require("jsonwebtoken");
+
+const SECRET = process.env.JWT_SECRET;
 
 // GET /qr/me
-// Returns the QR code for the student's current CV.
-// Useful for displaying the QR on the student's profile screen.
 exports.getMyQR = async (req, res) => {
     try {
         const studentId = req.user.id;
 
-        // Find the most recent QR token linked to this student's CV
         const [rows] = await pool.query(
             `SELECT qr_tokens.token, qr_tokens.expires_at
              FROM qr_tokens
@@ -22,8 +22,7 @@ exports.getMyQR = async (req, res) => {
         if (rows.length === 0)
             return res.status(404).json({ error: "No QR code found" });
 
-        // Build the URL the QR code encodes and generate the image
-        const qrUrl = `${process.env.BASE_URL}/qr/${rows[0].token}`;
+        const qrUrl = `http://localhost:3000/qr/${rows[0].token}`;
         const qrImage = await QRCode.toDataURL(qrUrl);
 
         res.json({
@@ -37,42 +36,71 @@ exports.getMyQR = async (req, res) => {
     }
 };
 
-// GET /qr/:token
-// Company-only endpoint. Called after a company scans a student's QR code.
-// Validates the token, logs the scan, and returns the CV download path.
-exports.scanQR = async (req, res) => {
-    const { token } = req.params;
-    // req.user is the authenticated company, set by auth middleware
-    const companyId = req.user.id;
+function getOptionalUser(req) {
+    const header = req.headers.authorization;
+
+    if (!header)
+        return null;
+
+    const parts = header.split(" ");
+
+    if (parts.length !== 2 || parts[0] !== "Bearer")
+        return null;
 
     try {
-        // Look up the token and join to the CV, only match if not expired
+        return jwt.verify(parts[1], SECRET);
+    } catch {
+        return null;
+    }
+}
+
+// GET /qr/:token
+exports.scanQR = async (req, res) => {
+    const { token } = req.params;
+
+    try {
         const [rows] = await pool.query(
-            `SELECT qr_tokens.*, cvs.id AS cv_id, cvs.file_path, cvs.original_name
+            `SELECT
+                qr_tokens.token,
+                qr_tokens.expires_at,
+                cvs.id AS cv_id,
+                cvs.file_path,
+                cvs.original_name,
+                users.id AS student_id,
+                users.name AS student_name,
+                users.email AS student_email
              FROM qr_tokens
              JOIN cvs ON cvs.id = qr_tokens.cv_id
+             JOIN users ON users.id = cvs.user_id
              WHERE qr_tokens.token = ?
-             AND qr_tokens.expires_at > NOW()`,
+             AND qr_tokens.expires_at > NOW()
+             LIMIT 1`,
             [token]
         );
 
-        // No result means the token doesn't exist or has expired
         if (rows.length === 0)
             return res.status(404).json({ error: "QR expired or invalid" });
 
-        const { cv_id, file_path, original_name } = rows[0];
+        const row = rows[0];
+        const optionalUser = getOptionalUser(req);
 
-        // Log the scan so the company can retrieve this CV later via /company/scans.
-        // INSERT IGNORE prevents duplicate entries if the same company scans the same CV twice.
-        await pool.query(
-            "INSERT IGNORE INTO scan_logs (company_id, cv_id) VALUES (?, ?)",
-            [companyId, cv_id]
-        );
+        if (optionalUser && optionalUser.role === "company") {
+            await pool.query(
+                `INSERT INTO scan_logs (company_id, cv_id, scanned_at)
+                 VALUES (?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE scanned_at = NOW()`,
+                [optionalUser.id, row.cv_id]
+            );
+        }
 
         res.json({
             message: "QR valid",
-            cv: `/uploads/${file_path}`, // relative path to access the PDF
-            original_name
+            cv: `/uploads/${row.file_path}`,
+            original_name: row.original_name,
+            student_id: row.student_id,
+            student_name: row.student_name,
+            student_email: row.student_email,
+            expires_at: row.expires_at
         });
 
     } catch (err) {

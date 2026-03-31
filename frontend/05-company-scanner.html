@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Company scanner</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <i class="fa-solid fa-building"></i>
+        <div>
+          <h1>Company scanner</h1>
+          <p>Scan een QR-code, laad een afbeelding of gebruik een token.</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="07-company-scan-history.html">Historiek</a>
+        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main two-column wide-left">
+    <section class="card">
+      <h2>QR scanner</h2>
+      <p class="section-text">Geef cameratoegang om live te scannen. Als dat niet lukt, kies een QR-afbeelding of plak een token.</p>
+      <div id="message" class="message hidden"></div>
+
+      <div class="scanner-box">
+        <video id="cameraVideo" class="scanner-video hidden" autoplay playsinline muted></video>
+        <div id="cameraPlaceholder" class="scanner-placeholder">
+          <i class="fa-solid fa-camera"></i>
+          <p>Camera nog niet gestart</p>
+        </div>
+      </div>
+
+      <canvas id="scannerCanvas" class="hidden"></canvas>
+      <input type="file" id="imageInput" accept="image/*" capture="environment" class="hidden">
+
+      <div class="button-row scanner-actions">
+        <button type="button" class="button" id="startCameraButton">Camera starten</button>
+        <button type="button" class="button button-secondary" id="stopCameraButton">Camera stoppen</button>
+        <button type="button" class="button button-secondary" id="pickImageButton">QR-afbeelding kiezen</button>
+      </div>
+    </section>
+
+    <section class="card aside-card">
+      <h2>Token of URL</h2>
+      <form id="scanForm" class="stack-form">
+        <div>
+          <label for="token">QR token of URL</label>
+          <input type="text" id="token" name="token" placeholder="http://localhost:3000/qr/... of enkel de token" required>
+        </div>
+        <div class="button-row">
+          <button type="submit" class="button">Open CV</button>
+        </div>
+      </form>
+
+      <h2 class="scanner-help-title">Na het scannen</h2>
+      <ul class="feature-list compact-list">
+        <li><i class="fa-solid fa-circle-check"></i> Geldige token toont studentgegevens.</li>
+        <li><i class="fa-solid fa-clock-rotate-left"></i> De scan komt in de historiek van het bedrijf.</li>
+        <li><i class="fa-solid fa-file-arrow-down"></i> Je kan de PDF openen en downloaden.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="scripts/config.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/company-scan.js"></script>
+</body>
+</html>
