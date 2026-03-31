@@ -23,6 +23,7 @@ function buildAdminCard(item) {
         <p class="list-meta">${studentEmail}</p>
         <p class="list-meta">${item.original_name || '-'}</p>
         <p class="list-meta">Geüpload op ${CVQR.formatDateTime(item.uploaded_at)}</p>
+<p class="list-meta">Laatst aangepast ${item.updated_at ? CVQR.formatDateTime(item.updated_at) : '-'}</p>
       </div>
       <div class="button-row">
         <a class="button button-secondary" href="${CVQR.openPdfPath(item.cv)}" target="_blank" rel="noopener">Open PDF</a>

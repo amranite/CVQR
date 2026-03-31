@@ -5,45 +5,15 @@ const startCameraButton = document.querySelector('#startCameraButton');
 const stopCameraButton = document.querySelector('#stopCameraButton');
 const pickImageButton = document.querySelector('#pickImageButton');
 const imageInput = document.querySelector('#imageInput');
-const video = document.querySelector('#cameraVideo');
-const canvas = document.querySelector('#scannerCanvas');
-const cameraPlaceholder = document.querySelector('#cameraPlaceholder');
+const tokenInput = document.querySelector('#token');
 
-let stream = null;
-let scanTimer = null;
-let detector = null;
+let html5QrCode = null;
+let scannerRunning = false;
 
 function handleCompanyLogout() {
   stopCamera();
   CVQR.clearSession();
   window.location.href = '02-login.html';
-}
-
-function showCamera() {
-  video.classList.remove('hidden');
-  cameraPlaceholder.classList.add('hidden');
-}
-
-function hideCamera() {
-  video.classList.add('hidden');
-  cameraPlaceholder.classList.remove('hidden');
-}
-
-function stopCamera() {
-  if (scanTimer) {
-    clearInterval(scanTimer);
-    scanTimer = null;
-  }
-
-  if (stream) {
-    stream.getTracks().forEach(function (track) {
-      track.stop();
-    });
-    stream = null;
-  }
-
-  video.srcObject = null;
-  hideCamera();
 }
 
 async function openByToken(rawValue) {
@@ -70,59 +40,79 @@ async function openByToken(rawValue) {
   }
 }
 
-async function detectFromVideoFrame() {
-  if (!detector || video.readyState < 2) {
-    return;
-  }
+function handleScanSuccess(decodedText) {
+  tokenInput.value = decodedText;
+  stopCamera().finally(function () {
+    openByToken(decodedText);
+  });
+}
 
-  try {
-    const codes = await detector.detect(video);
-
-    if (codes.length && codes[0].rawValue) {
-      stopCamera();
-      await openByToken(codes[0].rawValue);
-    }
-  } catch (error) {
-    CVQR.showMessage(companyScanMessage, 'Live scannen lukt niet in deze browser. Gebruik een QR-afbeelding of token.', 'error');
-    stopCamera();
-  }
+function handleScanError() {
 }
 
 async function startCamera() {
   CVQR.showMessage(companyScanMessage, '', 'error');
 
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    CVQR.showMessage(companyScanMessage, 'Camera is niet beschikbaar in deze browser. Gebruik een QR-afbeelding of token.', 'error');
-    return;
-  }
-
-  if (!('BarcodeDetector' in window)) {
-    CVQR.showMessage(companyScanMessage, 'Live QR-scan wordt niet ondersteund in deze browser. Gebruik een QR-afbeelding of token.', 'error');
+  if (typeof Html5Qrcode === 'undefined') {
+    CVQR.showMessage(companyScanMessage, 'De QR scanner library is niet geladen.', 'error');
     return;
   }
 
   try {
-    detector = new BarcodeDetector({ formats: ['qr_code'] });
-
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment'
-        }
-      });
-    } catch (error) {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode('reader');
     }
 
-    video.srcObject = stream;
-    showCamera();
+    if (scannerRunning) {
+      return;
+    }
 
-    scanTimer = setInterval(function () {
-      detectFromVideoFrame();
-    }, 700);
+    const cameras = await Html5Qrcode.getCameras();
+
+    if (!cameras || !cameras.length) {
+      CVQR.showMessage(companyScanMessage, 'Geen camera gevonden op dit toestel.', 'error');
+      return;
+    }
+
+    let cameraId = cameras[0].id;
+
+    for (let i = 0; i < cameras.length; i += 1) {
+      const label = (cameras[i].label || '').toLowerCase();
+
+      if (label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('front')) {
+        cameraId = cameras[i].id;
+        break;
+      }
+    }
+
+    await html5QrCode.start(
+      cameraId,
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.3333333
+      },
+      handleScanSuccess,
+      handleScanError
+    );
+
+    scannerRunning = true;
   } catch (error) {
-    CVQR.showMessage(companyScanMessage, 'Camera of live QR-scan kon niet gestart worden. Gebruik een QR-afbeelding of token.', 'error');
-    stopCamera();
+    CVQR.showMessage(companyScanMessage, 'Camera kon niet gestart worden. Controleer camerarechten of probeer opnieuw.', 'error');
+  }
+}
+
+async function stopCamera() {
+  if (!html5QrCode || !scannerRunning) {
+    return;
+  }
+
+  try {
+    await html5QrCode.stop();
+    await html5QrCode.clear();
+  } catch (error) {
+  } finally {
+    scannerRunning = false;
   }
 }
 
@@ -133,23 +123,24 @@ async function readSelectedImage(file) {
 
   CVQR.showMessage(companyScanMessage, '', 'error');
 
-  if (!('BarcodeDetector' in window)) {
-    CVQR.showMessage(companyScanMessage, 'QR-afbeelding lezen wordt niet ondersteund in deze browser. Gebruik een token of URL.', 'error');
+  if (typeof Html5Qrcode === 'undefined') {
+    CVQR.showMessage(companyScanMessage, 'De QR scanner library is niet geladen.', 'error');
+    imageInput.value = '';
     return;
   }
 
   try {
-    const bitmap = await createImageBitmap(file);
-    const localDetector = new BarcodeDetector({ formats: ['qr_code'] });
-    const codes = await localDetector.detect(bitmap);
+    await stopCamera();
 
-    if (!codes.length || !codes[0].rawValue) {
-      throw new Error('Geen QR-code gevonden in de gekozen afbeelding.');
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode('reader');
     }
 
-    await openByToken(codes[0].rawValue);
+    const decodedText = await html5QrCode.scanFile(file, true);
+    tokenInput.value = decodedText;
+    await openByToken(decodedText);
   } catch (error) {
-    CVQR.showMessage(companyScanMessage, error.message, 'error');
+    CVQR.showMessage(companyScanMessage, 'Geen QR-code gevonden in de gekozen afbeelding.', 'error');
   } finally {
     imageInput.value = '';
   }
@@ -158,7 +149,7 @@ async function readSelectedImage(file) {
 function handleScanSubmit(event) {
   event.preventDefault();
   CVQR.showMessage(companyScanMessage, '', 'error');
-  openByToken(document.querySelector('#token').value);
+  openByToken(tokenInput.value);
 }
 
 if (CVQR.requireRole('company', '02-login.html')) {
