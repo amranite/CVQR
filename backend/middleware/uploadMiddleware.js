@@ -1,13 +1,17 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
+
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Configure where and how uploaded files are stored on disk
 const storage = multer.diskStorage({
 
     // Save all uploads to the /uploads directory
     destination: (req, file, cb) => {
-        cb(null, "uploads/");
+        cb(null, uploadDir);
     },
 
     // Rename the file to a UUID to avoid collisions and hide original names on disk

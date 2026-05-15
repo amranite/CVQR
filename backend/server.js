@@ -16,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.use("/auth", authRoutes);
 app.use("/cv", cvRoutes);
@@ -24,7 +25,7 @@ app.use("/company", companyRoutes);
 app.use("/admin", adminRoutes);
 
 app.get("/", (req, res) => {
-  res.send("API is running");
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
 app.get("/db-test", async (req, res) => {

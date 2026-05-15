@@ -23,6 +23,14 @@ exports.uploadCV = async (req, res) => {
         const expires = new Date();
         expires.setHours(expires.getHours() + 72);
 
+        // Reject upload if student already has a CV — they should use PUT /cv instead
+        const [existing] = await pool.query(
+            "SELECT id FROM cvs WHERE user_id = ? LIMIT 1",
+            [studentId]
+        );
+        if (existing.length > 0)
+            return res.status(409).json({ error: "CV already exists. Use PUT /cv to replace it." });
+
         // Insert the CV record and get its new ID
         const [cvResult] = await pool.query(
             "INSERT INTO cvs (user_id, file_path, original_name) VALUES (?, ?, ?)",
