@@ -16,9 +16,9 @@ function handleUpload(req, res, next) {
 }
 
 // All CV routes are student-only
-router.post("/upload", auth, requireRole("student"), handleUpload, uploadCV); // Upload a new CV
-router.get("/me", auth, requireRole("student"), getMyCV);                     // Get current CV info
-router.put("/", auth, requireRole("student"), handleUpload, replaceCV);       // Replace existing CV with a new file
-router.delete("/", auth, requireRole("student"), deleteCV);                   // Delete CV
+router.post("/upload", auth, requireRole("student"), handleUpload, uploadCV); // Upload first CV or append a version
+router.get("/me", auth, requireRole("student"), getMyCV);                     // Get logical CV and retained versions
+router.put("/", auth, requireRole("student"), handleUpload, replaceCV);       // Append a new version to existing CV
+router.delete("/", auth, requireRole("student"), deleteCV);                   // Delete CV if not used by an open participation
 
 module.exports = router;

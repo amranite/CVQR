@@ -154,7 +154,7 @@ CREATE TABLE participations (
         ON DELETE CASCADE,
     CONSTRAINT fk_participations_selected_cv
         FOREIGN KEY (selected_cv_id) REFERENCES cvs(id)
-        ON DELETE RESTRICT
+        ON DELETE SET NULL
 );
 
 -- ------------------------------------------------------------------
