@@ -204,5 +204,5 @@ CREATE TABLE scan_logs (
         ON DELETE CASCADE,
     CONSTRAINT fk_scan_logs_qr_token
         FOREIGN KEY (qr_token_id) REFERENCES qr_tokens(id)
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
 );
