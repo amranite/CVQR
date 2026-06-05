@@ -9,6 +9,8 @@ const cvRoutes = require("./routes/cvRoutes");
 const qrRoutes = require("./routes/qrRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+const participationRoutes = require("./routes/participationRoutes");
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use("/cv", cvRoutes);
 app.use("/qr", qrRoutes);
 app.use("/company", companyRoutes);
 app.use("/admin", adminRoutes);
+app.use("/events", eventRoutes);
+app.use("/participations", participationRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));
