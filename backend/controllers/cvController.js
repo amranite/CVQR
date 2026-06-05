@@ -3,11 +3,14 @@ const {
     addCvVersion,
     assertCvNotUsedByOpenParticipation,
     getCvVersions,
+    getCvVersionById,
     getLatestCvVersion,
+    getLatestCvVersionForParticipation,
     getStudentCv
 } = require("../utils/cvVersions");
-const { deleteFileIfExists } = require("../utils/cvFiles");
-const { isHttpError } = require("../utils/httpError");
+const { assertCompanyCanAccessEvent } = require("../utils/eventAccess");
+const { deleteFileIfExists, sendCvVersionFile: streamCvVersionFile } = require("../utils/cvFiles");
+const { HttpError, isHttpError } = require("../utils/httpError");
 
 function handleControllerError(res, err) {
     if (isHttpError(err))
@@ -43,6 +46,62 @@ async function removeUploadedFileOnFailure(req) {
     } catch {
         // Preserve the original request error; cleanup failure is secondary here.
     }
+}
+
+async function getParticipationForFileAccess(participationId) {
+    const [rows] = await pool.query(
+        `SELECT
+            participations.id,
+            participations.student_id,
+            participations.event_id,
+            participations.selected_cv_id
+         FROM participations
+         WHERE participations.id = ?
+         LIMIT 1`,
+        [participationId]
+    );
+
+    return rows[0] || null;
+}
+
+async function assertCompanyScannedParticipation(companyId, participationId) {
+    const [rows] = await pool.query(
+        `SELECT id
+         FROM scan_logs
+         WHERE company_id = ?
+         AND participation_id = ?
+         LIMIT 1`,
+        [companyId, participationId]
+    );
+
+    if (rows.length === 0)
+        throw new HttpError(403, "Company has not scanned this participation", "SCAN_REQUIRED");
+}
+
+async function assertCanAccessCvVersion(user, cvVersion) {
+    if (user.role === "admin")
+        return;
+
+    if (user.role === "student" && cvVersion.student_id === user.id)
+        return;
+
+    throw new HttpError(403, "Forbidden", "CV_VERSION_FORBIDDEN");
+}
+
+async function assertCanAccessParticipationCv(user, participation) {
+    if (user.role === "admin")
+        return;
+
+    if (user.role === "student" && participation.student_id === user.id)
+        return;
+
+    if (user.role === "company") {
+        await assertCompanyCanAccessEvent(user.id, participation.event_id);
+        await assertCompanyScannedParticipation(user.id, participation.id);
+        return;
+    }
+
+    throw new HttpError(403, "Forbidden", "PARTICIPATION_CV_FORBIDDEN");
 }
 
 // POST /cv/upload
@@ -168,5 +227,50 @@ exports.deleteCV = async (req, res) => {
         handleControllerError(res, err);
     } finally {
         connection.release();
+    }
+};
+
+// GET /cv/version/:versionId/file
+// Streams a specific retained CV version for the owning student or any admin.
+exports.sendCvVersionFile = async (req, res) => {
+    try {
+        const cvVersion = await getCvVersionById(req.params.versionId);
+
+        if (!cvVersion)
+            return res.status(404).json({ error: "CV version not found" });
+
+        await assertCanAccessCvVersion(req.user, cvVersion);
+
+        return streamCvVersionFile(res, cvVersion);
+
+    } catch (err) {
+        handleControllerError(res, err);
+    }
+};
+
+// GET /cv/participation/:participationId/file
+// Streams the latest CV version selected for a participation. Companies must
+// have scanned the participation and still be assigned to an active event.
+exports.sendParticipationCvFile = async (req, res) => {
+    try {
+        const participation = await getParticipationForFileAccess(req.params.participationId);
+
+        if (!participation)
+            return res.status(404).json({ error: "Participation not found" });
+
+        if (!participation.selected_cv_id)
+            return res.status(404).json({ error: "Participation has no selected CV" });
+
+        await assertCanAccessParticipationCv(req.user, participation);
+
+        const cvVersion = await getLatestCvVersionForParticipation(participation.id);
+
+        if (!cvVersion)
+            return res.status(404).json({ error: "CV version not found" });
+
+        return streamCvVersionFile(res, cvVersion);
+
+    } catch (err) {
+        handleControllerError(res, err);
     }
 };

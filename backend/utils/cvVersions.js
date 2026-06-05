@@ -88,6 +88,21 @@ async function getLatestCvVersionForParticipation(participationId, db = pool) {
     return rows[0] || null;
 }
 
+async function getCvVersionById(versionId, db = pool) {
+    const [rows] = await db.query(
+        `SELECT
+            cv_versions.*,
+            cvs.student_id
+         FROM cv_versions
+         JOIN cvs ON cvs.id = cv_versions.cv_id
+         WHERE cv_versions.id = ?
+         LIMIT 1`,
+        [versionId]
+    );
+
+    return rows[0] || null;
+}
+
 async function assertStudentOwnsCv(studentId, cvId, db = pool) {
     const [rows] = await db.query(
         `SELECT id
@@ -181,6 +196,7 @@ module.exports = {
     getLatestCvVersion,
     getLatestCvVersionForStudent,
     getLatestCvVersionForParticipation,
+    getCvVersionById,
     assertStudentOwnsCv,
     assertCvNotUsedByOpenParticipation,
     addCvVersion,
