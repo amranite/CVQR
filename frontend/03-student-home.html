@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CVQR - Student upload</title>
+  <title>CVQR - Student dashboard</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/common.css">
@@ -16,40 +16,72 @@
         <i class="fa-solid fa-user-graduate"></i>
         <div>
           <h1>Student dashboard</h1>
-          <p>Upload je CV en laat een QR genereren.</p>
+          <p>Manage your CV, event registration, and QR code.</p>
         </div>
       </div>
       <nav class="header-actions">
-        <a class="button button-secondary" href="04-student-cv.html">Mijn CV</a>
-        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+        <a class="button button-secondary" href="04-student-cv.html">My CV</a>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
   </header>
 
-  <main class="container page-main two-column">
+  <main class="container page-main two-column wide-right">
     <section class="card">
-      <h2>CV uploaden</h2>
-      <p class="section-text">Kies een PDF-bestand van maximaal 5 MB.</p>
+      <h2>CV</h2>
+      <p class="section-text">Choose a PDF file of up to 5 MB.</p>
       <div id="message" class="message hidden"></div>
       <form id="uploadForm" class="stack-form" enctype="multipart/form-data">
         <div>
-          <label for="cv">PDF-bestand</label>
+          <label for="cv">PDF file</label>
           <input type="file" id="cv" name="cv" accept=".pdf,application/pdf" required>
         </div>
         <div class="button-row">
           <button type="submit" class="button">Upload CV</button>
         </div>
       </form>
+
+      <dl class="info-list">
+        <div><dt>Latest file</dt><dd id="currentFileName">-</dd></div>
+        <div><dt>Version</dt><dd id="currentVersion">-</dd></div>
+        <div><dt>Uploaded at</dt><dd id="currentUploadedAt">-</dd></div>
+      </dl>
+      <div class="button-row">
+        <button type="button" id="openCurrentCvButton" class="button button-secondary hidden">Open CV</button>
+      </div>
     </section>
 
-    <section class="card aside-card">
-      <h2>Wat gebeurt er?</h2>
-      <ul class="feature-list compact-list">
-        <li><i class="fa-solid fa-file-pdf"></i> Je PDF wordt lokaal opgeslagen.</li>
-        <li><i class="fa-solid fa-qrcode"></i> Er wordt een QR-code aangemaakt.</li>
-        <li><i class="fa-solid fa-clock"></i> De token vervalt na 72 uur.</li>
-        <li><i class="fa-solid fa-pen"></i> Je kan later vervangen of verwijderen.</li>
-      </ul>
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Event</h2>
+          <p class="section-text">Register for an open event.</p>
+        </div>
+        <button type="button" id="refreshButton" class="button button-secondary">Refresh</button>
+      </div>
+
+      <div id="participationDetails" class="empty-state">No active registration.</div>
+
+      <div class="section-head">
+        <div>
+          <h3>Open events</h3>
+        </div>
+      </div>
+      <div id="openEventsList" class="card-list"></div>
+
+      <section id="qrPanel" class="hidden">
+        <h3>QR code</h3>
+        <div class="qr-box">
+          <img id="qrImage" src="" alt="QR code for event participation">
+        </div>
+        <div class="token-box">
+          <p><strong>QR URL</strong></p>
+          <p id="qrUrl" class="token-value">-</p>
+        </div>
+        <div class="button-row">
+          <button type="button" id="generateQrButton" class="button">Activate QR</button>
+        </div>
+      </section>
     </section>
   </main>
 

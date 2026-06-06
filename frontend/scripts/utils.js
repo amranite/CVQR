@@ -185,6 +185,32 @@
     return apiBase() + relativePath;
   }
 
+  async function openAuthenticatedFile(relativePath) {
+    const response = await fetch(apiBase() + relativePath, {
+      headers: authHeaders()
+    });
+
+    if (!response.ok) {
+      let message = 'File could not be opened';
+
+      try {
+        const data = await response.json();
+        message = data.message || data.error || message;
+      } catch (error) {
+      }
+
+      throw new Error(message);
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    window.open(objectUrl, '_blank', 'noopener');
+
+    window.setTimeout(function () {
+      URL.revokeObjectURL(objectUrl);
+    }, 60000);
+  }
+
   window.CVQR = {
     apiBase,
     getToken,
@@ -203,6 +229,7 @@
     extractToken,
     setLastScan,
     getLastScan,
-    openPdfPath
+    openPdfPath,
+    openAuthenticatedFile
   };
 })();
