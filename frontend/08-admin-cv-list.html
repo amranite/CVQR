@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CVQR - Admin CV overzicht</title>
+  <title>CVQR - Admin dashboard</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/common.css">
@@ -15,22 +15,90 @@
       <div class="brand">
         <i class="fa-solid fa-shield-halved"></i>
         <div>
-          <h1>Admin overzicht</h1>
-          <p>Alle geüploade CV's op één plaats.</p>
+          <h1>Admin dashboard</h1>
+          <p>Manage events, company access, registrations, scans, and CVs.</p>
         </div>
       </div>
       <nav class="header-actions">
-        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+        <button type="button" class="button button-secondary" id="refreshButton">Refresh</button>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
   </header>
 
-  <main class="container page-main">
+  <main class="container page-main grid">
     <section class="card">
       <div class="section-head">
         <div>
-          <h2>CV lijst</h2>
-          <p id="cvCount" class="section-text">0 resultaten</p>
+          <h2 id="eventFormTitle">Create event</h2>
+          <p class="section-text">Create a draft event, then open it when registration should start.</p>
+        </div>
+        <button type="button" class="button button-secondary hidden" id="cancelEditButton">Cancel edit</button>
+      </div>
+      <div id="eventMessage" class="message hidden"></div>
+      <form id="eventForm" class="stack-form">
+        <input type="hidden" id="eventId" name="eventId">
+        <div>
+          <label for="eventName">Name</label>
+          <input type="text" id="eventName" name="name" required>
+        </div>
+        <div>
+          <label for="eventLocation">Location</label>
+          <input type="text" id="eventLocation" name="location" required>
+        </div>
+        <div>
+          <label for="registrationOpensAt">Registration opens at</label>
+          <input type="datetime-local" id="registrationOpensAt" name="registration_opens_at" required>
+        </div>
+        <div>
+          <label for="registrationClosesAt">Registration closes at</label>
+          <input type="datetime-local" id="registrationClosesAt" name="registration_closes_at" required>
+        </div>
+        <div>
+          <label for="startsAt">Event starts at</label>
+          <input type="datetime-local" id="startsAt" name="starts_at" required>
+        </div>
+        <div>
+          <label for="endsAt">Event ends at</label>
+          <input type="datetime-local" id="endsAt" name="ends_at" required>
+        </div>
+        <div class="button-row">
+          <button type="submit" class="button" id="saveEventButton">Create event</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Events</h2>
+          <p id="eventCount" class="section-text">0 results</p>
+        </div>
+      </div>
+      <div id="eventsList" class="card-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Event details</h2>
+          <p id="selectedEventName" class="section-text">Select an event to inspect registrations and scans.</p>
+        </div>
+      </div>
+      <div id="eventDetailsMessage" class="message hidden"></div>
+
+      <h3>Registered students</h3>
+      <div id="participationsList" class="card-list"></div>
+
+      <h3>Scan audit</h3>
+      <div id="scansList" class="card-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>CVs</h2>
+          <p id="cvCount" class="section-text">0 results</p>
         </div>
       </div>
       <div id="message" class="message hidden"></div>
