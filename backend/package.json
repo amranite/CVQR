@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "http-test": "node scripts/httpIntegrationTest.js",
     "smoke": "node scripts/smokeTest.js",
     "test": "npm run smoke",
     "start": "node server.js"
