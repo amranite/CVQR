@@ -132,7 +132,7 @@
 
     const date = new Date(value);
 
-    return new Intl.DateTimeFormat('nl-BE', {
+    return new Intl.DateTimeFormat('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -148,7 +148,7 @@
 
     const date = new Date(value);
 
-    return new Intl.DateTimeFormat('nl-BE', {
+    return new Intl.DateTimeFormat('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -185,7 +185,7 @@
     return apiBase() + relativePath;
   }
 
-  async function openAuthenticatedFile(relativePath) {
+  async function getAuthenticatedFileUrl(relativePath) {
     const response = await fetch(apiBase() + relativePath, {
       headers: authHeaders()
     });
@@ -202,8 +202,11 @@
       throw new Error(message);
     }
 
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
+    return URL.createObjectURL(await response.blob());
+  }
+
+  async function openAuthenticatedFile(relativePath) {
+    const objectUrl = await getAuthenticatedFileUrl(relativePath);
     window.open(objectUrl, '_blank', 'noopener');
 
     window.setTimeout(function () {
@@ -230,6 +233,7 @@
     setLastScan,
     getLastScan,
     openPdfPath,
+    getAuthenticatedFileUrl,
     openAuthenticatedFile
   };
 })();

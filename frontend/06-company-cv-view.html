@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CVQR - Gescande CV</title>
+  <title>CVQR - Scanned CV</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/common.css">
@@ -15,36 +15,40 @@
       <div class="brand">
         <i class="fa-solid fa-file-lines"></i>
         <div>
-          <h1>Gescande CV</h1>
-          <p>Bekijk gegevens en open de PDF.</p>
+          <h1>Scanned CV</h1>
+          <p>Review student details and open the PDF.</p>
         </div>
       </div>
       <nav class="header-actions">
-        <a class="button button-secondary" href="05-company-scanner.html">Nieuwe scan</a>
-        <a class="button button-secondary" href="07-company-scan-history.html">Historiek</a>
+        <a class="button button-secondary" href="05-company-scanner.html">New scan</a>
+        <a class="button button-secondary" href="07-company-scan-history.html">History</a>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
   </header>
 
   <main class="container page-main two-column wide-right">
     <section class="card">
-      <h2>Studentgegevens</h2>
+      <h2>Student details</h2>
       <div id="message" class="message hidden"></div>
       <dl class="info-list">
-        <div><dt>Naam</dt><dd id="studentName">-</dd></div>
-        <div><dt>E-mail</dt><dd id="studentEmail">-</dd></div>
-        <div><dt>Bestand</dt><dd id="fileName">-</dd></div>
-        <div><dt>Gescand op</dt><dd id="scannedAt">-</dd></div>
+        <div><dt>Name</dt><dd id="studentName">-</dd></div>
+        <div><dt>Email</dt><dd id="studentEmail">-</dd></div>
+        <div><dt>Event</dt><dd id="eventName">-</dd></div>
+        <div><dt>Location</dt><dd id="eventLocation">-</dd></div>
+        <div><dt>File</dt><dd id="fileName">-</dd></div>
+        <div><dt>Version</dt><dd id="versionNumber">-</dd></div>
+        <div><dt>Scanned at</dt><dd id="scannedAt">-</dd></div>
       </dl>
       <div class="button-row">
-        <a id="downloadLink" class="button" href="#" target="_blank" rel="noopener">Open PDF</a>
+        <button type="button" id="openPdfButton" class="button">Open PDF</button>
       </div>
     </section>
 
     <section class="card pdf-card">
-      <h2>PDF voorbeeld</h2>
+      <h2>PDF preview</h2>
       <div class="pdf-frame-wrapper">
-        <iframe id="pdfFrame" title="PDF voorbeeld"></iframe>
+        <iframe id="pdfFrame" title="PDF preview"></iframe>
       </div>
     </section>
   </main>

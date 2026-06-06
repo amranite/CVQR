@@ -20,7 +20,7 @@ async function openByToken(rawValue) {
   const token = CVQR.extractToken(rawValue);
 
   if (!token) {
-    CVQR.showMessage(companyScanMessage, 'Voer een geldige token of URL in.', 'error');
+    CVQR.showMessage(companyScanMessage, 'Enter a valid token or URL.', 'error');
     return;
   }
 
@@ -54,7 +54,7 @@ async function startCamera() {
   CVQR.showMessage(companyScanMessage, '', 'error');
 
   if (typeof Html5Qrcode === 'undefined') {
-    CVQR.showMessage(companyScanMessage, 'De QR scanner library is niet geladen.', 'error');
+    CVQR.showMessage(companyScanMessage, 'The QR scanner library is not loaded.', 'error');
     return;
   }
 
@@ -70,7 +70,7 @@ async function startCamera() {
     const cameras = await Html5Qrcode.getCameras();
 
     if (!cameras || !cameras.length) {
-      CVQR.showMessage(companyScanMessage, 'Geen camera gevonden op dit toestel.', 'error');
+      CVQR.showMessage(companyScanMessage, 'No camera was found on this device.', 'error');
       return;
     }
 
@@ -98,7 +98,7 @@ async function startCamera() {
 
     scannerRunning = true;
   } catch (error) {
-    CVQR.showMessage(companyScanMessage, 'Camera kon niet gestart worden. Controleer camerarechten of probeer opnieuw.', 'error');
+    CVQR.showMessage(companyScanMessage, 'The camera could not be started. Check camera permissions or try again.', 'error');
   }
 }
 
@@ -124,7 +124,7 @@ async function readSelectedImage(file) {
   CVQR.showMessage(companyScanMessage, '', 'error');
 
   if (typeof Html5Qrcode === 'undefined') {
-    CVQR.showMessage(companyScanMessage, 'De QR scanner library is niet geladen.', 'error');
+    CVQR.showMessage(companyScanMessage, 'The QR scanner library is not loaded.', 'error');
     imageInput.value = '';
     return;
   }
@@ -140,7 +140,7 @@ async function readSelectedImage(file) {
     tokenInput.value = decodedText;
     await openByToken(decodedText);
   } catch (error) {
-    CVQR.showMessage(companyScanMessage, 'Geen QR-code gevonden in de gekozen afbeelding.', 'error');
+    CVQR.showMessage(companyScanMessage, 'No QR code was found in the selected image.', 'error');
   } finally {
     imageInput.value = '';
   }
