@@ -20,7 +20,7 @@ async function handleRegisterSubmit(event) {
     });
 
     registerForm.reset();
-    CVQR.showMessage(registerMessage, 'Account aangemaakt. Log nu in.', 'success');
+    CVQR.showMessage(registerMessage, 'Account created. Log in now.', 'success');
     setTimeout(function () {
       window.location.href = '02-login.html';
     }, 800);

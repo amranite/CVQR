@@ -6,6 +6,6 @@ const requireRole = require("../middleware/roleMiddleware");
 const { getMyQR, scanQR } = require("../controllers/qrController");
 
 router.get("/me", auth, requireRole("student"), getMyQR);        // Student retrieves their own QR code
-router.get("/:token", scanQR);                                   // Anyone can scan; company scans are logged if authenticated
+router.get("/:token", auth, requireRole("company"), scanQR);     // Assigned companies scan participation QR codes
 
 module.exports = router;

@@ -9,13 +9,14 @@ const cvRoutes = require("./routes/cvRoutes");
 const qrRoutes = require("./routes/qrRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+const participationRoutes = require("./routes/participationRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.use("/auth", authRoutes);
@@ -23,6 +24,8 @@ app.use("/cv", cvRoutes);
 app.use("/qr", qrRoutes);
 app.use("/company", companyRoutes);
 app.use("/admin", adminRoutes);
+app.use("/events", eventRoutes);
+app.use("/participations", participationRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));
@@ -37,6 +40,10 @@ app.get("/db-test", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
+if (require.main === module) {
+  app.listen(3000, () => {
+    console.log("Server running on port 3000");
+  });
+}
+
+module.exports = app;

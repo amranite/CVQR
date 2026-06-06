@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CVQR - Mijn CV</title>
+  <title>CVQR - My CV</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/common.css">
@@ -14,36 +14,44 @@
       <div class="brand">
         <i class="fa-solid fa-user-graduate"></i>
         <div>
-          <h1>Mijn CV</h1>
-          <p>Bekijk je upload, QR-code, link en token.</p>
+          <h1>My CV</h1>
+          <p>View your CV versions and active event QR.</p>
         </div>
       </div>
       <nav class="header-actions">
-        <a class="button button-secondary" href="03-student-home.html">Upload</a>
-        <button type="button" class="button logout-button" id="logoutButton">Uitloggen</button>
+        <a class="button button-secondary" href="03-student-home.html">Dashboard</a>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
   </header>
 
   <main class="container page-main two-column">
     <section class="card">
-      <h2>CV gegevens</h2>
+      <h2>CV details</h2>
       <div id="message" class="message hidden"></div>
       <dl class="info-list">
-        <div><dt>Bestandsnaam</dt><dd id="fileName">-</dd></div>
-        <div><dt>Geüpload op</dt><dd id="uploadedAt">-</dd></div>
-        <div><dt>Laatst aangepast</dt><dd id="updatedAt">-</dd></div>
-        <div><dt>QR vervalt op</dt><dd id="expiresAt">-</dd></div>
+        <div><dt>Latest file</dt><dd id="fileName">-</dd></div>
+        <div><dt>Version</dt><dd id="versionNumber">-</dd></div>
+        <div><dt>Uploaded at</dt><dd id="uploadedAt">-</dd></div>
+        <div><dt>Last updated</dt><dd id="updatedAt">-</dd></div>
       </dl>
       <div class="button-row">
-        <a id="downloadLink" class="button button-secondary" href="#" target="_blank" rel="noopener">Open CV</a>
+        <button type="button" id="downloadButton" class="button button-secondary">Open latest CV</button>
       </div>
+
+      <h3>Versions</h3>
+      <div id="versionsList" class="card-list"></div>
     </section>
 
     <section class="card">
-      <h2>QR-code</h2>
+      <h2>Event and QR code</h2>
+      <dl class="info-list">
+        <div><dt>Event</dt><dd id="eventName">-</dd></div>
+        <div><dt>Location</dt><dd id="eventLocation">-</dd></div>
+        <div><dt>Status</dt><dd id="eventStatus">-</dd></div>
+      </dl>
       <div class="qr-box">
-        <img id="qrImage" src="" alt="QR-code van het CV">
+        <img id="qrImage" src="" alt="CV QR code">
       </div>
       <div class="token-box">
         <p><strong>QR URL</strong></p>
@@ -53,14 +61,17 @@
         <p><strong>QR token</strong></p>
         <p id="qrToken" class="token-value">-</p>
       </div>
+      <div class="button-row">
+        <button type="button" id="generateQrButton" class="button">Activate QR</button>
+      </div>
       <form id="replaceForm" class="stack-form" enctype="multipart/form-data">
         <div>
-          <label for="newCv">Nieuwe PDF</label>
+          <label for="newCv">New PDF</label>
           <input type="file" id="newCv" name="cv" accept=".pdf,application/pdf" required>
         </div>
         <div class="button-row">
-          <button type="submit" class="button">CV vervangen</button>
-          <button type="button" id="deleteButton" class="button button-danger">CV verwijderen</button>
+          <button type="submit" class="button">Replace CV</button>
+          <button type="button" id="deleteButton" class="button button-danger">Delete CV</button>
         </div>
       </form>
     </section>

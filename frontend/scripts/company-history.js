@@ -9,42 +9,72 @@ function handleHistoryLogout() {
 }
 
 function renderEmptyHistory() {
-  historyList.innerHTML = '<div class="empty-state">Er zijn nog geen gescande CV\'s.</div>';
+  historyList.innerHTML = '';
+
+  const state = document.createElement('div');
+  state.className = 'empty-state';
+  state.textContent = 'No scanned CVs are currently available.';
+  historyList.appendChild(state);
+}
+
+function appendMeta(card, text) {
+  if (!text) {
+    return;
+  }
+
+  const meta = document.createElement('p');
+  meta.className = 'list-meta';
+  meta.textContent = text;
+  card.appendChild(meta);
 }
 
 function buildHistoryCard(item) {
-  return `
-    <article class="list-card">
-      <div>
-        <h3>${item.student_name}</h3>
-        <p class="list-meta">${item.student_email}</p>
-        <p class="list-meta">${item.original_name}</p>
-        <p class="list-meta">Gescand op ${CVQR.formatDateTime(item.scanned_at)}</p>
-      </div>
-      <div class="button-row">
-        <button type="button" class="button button-secondary" data-cv="${item.cv}" data-name="${item.student_name}" data-email="${item.student_email}" data-file="${item.original_name}" data-scanned="${item.scanned_at}">Open CV</button>
-      </div>
-    </article>
-  `;
+  const card = document.createElement('article');
+  card.className = 'list-card';
+
+  const content = document.createElement('div');
+  const title = document.createElement('h3');
+  const cvVersion = item.cv_version || {};
+
+  title.textContent = item.student_name || 'Unknown student';
+  content.appendChild(title);
+
+  appendMeta(content, item.student_email);
+  appendMeta(content, item.event ? [item.event.name, item.event.location].filter(Boolean).join(' - ') : '');
+  appendMeta(content, cvVersion.original_name || item.original_name);
+  appendMeta(content, cvVersion.version_number ? 'Version ' + cvVersion.version_number : '');
+  appendMeta(content, 'Scanned at ' + CVQR.formatDateTime(item.scanned_at));
+
+  const actionRow = document.createElement('div');
+  actionRow.className = 'button-row';
+
+  const openButton = document.createElement('button');
+  openButton.type = 'button';
+  openButton.className = 'button button-secondary';
+  openButton.textContent = 'Open CV';
+  openButton.addEventListener('click', function () {
+    CVQR.setLastScan({ scan: item });
+    window.location.href = '06-company-cv-view.html';
+  });
+
+  actionRow.appendChild(openButton);
+  card.append(content, actionRow);
+
+  return card;
 }
 
-function bindHistoryButtons() {
-  const buttons = historyList.querySelectorAll('button[data-cv]');
+function renderHistory(rows) {
+  historyCount.textContent = rows.length + ' result' + (rows.length === 1 ? '' : 's');
 
-  buttons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      CVQR.setLastScan({
-        scan: {
-          cv: button.dataset.cv,
-          original_name: button.dataset.file,
-          student_name: button.dataset.name,
-          student_email: button.dataset.email,
-          scanned_at: button.dataset.scanned
-        }
-      });
+  if (!rows.length) {
+    renderEmptyHistory();
+    return;
+  }
 
-      window.location.href = '06-company-cv-view.html';
-    });
+  historyList.innerHTML = '';
+
+  rows.forEach(function (item) {
+    historyList.appendChild(buildHistoryCard(item));
   });
 }
 
@@ -54,15 +84,7 @@ async function loadHistory() {
       headers: CVQR.authHeaders()
     });
 
-    historyCount.textContent = rows.length + ' resultaat' + (rows.length === 1 ? '' : 'en');
-
-    if (!rows.length) {
-      renderEmptyHistory();
-      return;
-    }
-
-    historyList.innerHTML = rows.map(buildHistoryCard).join('');
-    bindHistoryButtons();
+    renderHistory(rows);
   } catch (error) {
     CVQR.showMessage(historyMessage, error.message, 'error');
   }

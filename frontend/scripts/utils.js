@@ -132,7 +132,7 @@
 
     const date = new Date(value);
 
-    return new Intl.DateTimeFormat('nl-BE', {
+    return new Intl.DateTimeFormat('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -148,7 +148,7 @@
 
     const date = new Date(value);
 
-    return new Intl.DateTimeFormat('nl-BE', {
+    return new Intl.DateTimeFormat('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -185,6 +185,35 @@
     return apiBase() + relativePath;
   }
 
+  async function getAuthenticatedFileUrl(relativePath) {
+    const response = await fetch(apiBase() + relativePath, {
+      headers: authHeaders()
+    });
+
+    if (!response.ok) {
+      let message = 'File could not be opened';
+
+      try {
+        const data = await response.json();
+        message = data.message || data.error || message;
+      } catch (error) {
+      }
+
+      throw new Error(message);
+    }
+
+    return URL.createObjectURL(await response.blob());
+  }
+
+  async function openAuthenticatedFile(relativePath) {
+    const objectUrl = await getAuthenticatedFileUrl(relativePath);
+    window.open(objectUrl, '_blank', 'noopener');
+
+    window.setTimeout(function () {
+      URL.revokeObjectURL(objectUrl);
+    }, 60000);
+  }
+
   window.CVQR = {
     apiBase,
     getToken,
@@ -203,6 +232,8 @@
     extractToken,
     setLastScan,
     getLastScan,
-    openPdfPath
+    openPdfPath,
+    getAuthenticatedFileUrl,
+    openAuthenticatedFile
   };
 })();
