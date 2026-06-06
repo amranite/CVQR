@@ -9,6 +9,7 @@ const {
     createEvent,
     deleteStudentCv,
     getAllCvs,
+    getCompanyUsers,
     getEventParticipations,
     getEventScans,
     getEvents,
@@ -19,6 +20,7 @@ const {
 
 router.get("/cvs", auth, allowRoles("admin"), getAllCvs);
 router.delete("/cv/:studentId", auth, allowRoles("admin"), deleteStudentCv);
+router.get("/companies", auth, allowRoles("admin"), getCompanyUsers);
 
 router.get("/events", auth, allowRoles("admin"), getEvents);
 router.post("/events", auth, allowRoles("admin"), createEvent);

@@ -209,6 +209,31 @@ exports.deleteStudentCv = async (req, res) => {
     }
 };
 
+// GET /admin/companies
+// Returns company user accounts that can be assigned to events.
+exports.getCompanyUsers = async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT
+                users.id,
+                users.name,
+                users.email,
+                users.created_at,
+                COUNT(event_companies.id) AS assigned_events_count
+             FROM users
+             LEFT JOIN event_companies ON event_companies.company_id = users.id
+             WHERE users.role = 'company'
+             GROUP BY users.id, users.name, users.email, users.created_at
+             ORDER BY users.name ASC, users.email ASC`
+        );
+
+        res.json(rows);
+
+    } catch (err) {
+        handleControllerError(res, err);
+    }
+};
+
 // GET /admin/events
 exports.getEvents = async (req, res) => {
     try {

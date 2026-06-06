@@ -128,6 +128,15 @@ async function run() {
         });
         assertStatus(assignCompanyRes, 200, "assign company");
 
+        const companyUsersRes = await call(adminController.getCompanyUsers, {
+            user: { id: ids.adminId, role: "admin" }
+        });
+        assertStatus(companyUsersRes, 200, "list company users");
+        assert(
+            companyUsersRes.body.some((company) => company.id === ids.companyId),
+            "company user list should include company account"
+        );
+
         const openEventsRes = await call(eventController.getOpenEvents, {
             user: { id: ids.studentId, role: "student" }
         });

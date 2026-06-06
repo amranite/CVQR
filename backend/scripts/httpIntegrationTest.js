@@ -190,11 +190,12 @@ async function run() {
     });
     assert(Array.isArray(adminCvs), "Admin CV list did not return an array");
 
-    const [companyRows] = await pool.query(
-        "SELECT id FROM users WHERE email = ? AND role = 'company' LIMIT 1",
-        [companyEmail]
-    );
-    const companyId = companyRows[0].id;
+    const { data: companyUsers } = await request("/admin/companies", {
+        headers: authHeaders(adminToken)
+    });
+    const companyUser = companyUsers.find((company) => company.email === companyEmail);
+    assert(companyUser, "Admin company user list did not include integration company");
+    const companyId = companyUser.id;
 
     const { data: createEventData } = await request("/admin/events", {
         method: "POST",

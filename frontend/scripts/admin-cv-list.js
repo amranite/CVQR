@@ -16,6 +16,7 @@ const participationsList = document.querySelector('#participationsList');
 const scansList = document.querySelector('#scansList');
 
 let currentEvents = [];
+let companyUsers = [];
 let selectedEventId = null;
 
 function handleAdminLogout() {
@@ -171,18 +172,29 @@ function buildEventCard(event) {
 
   const inputWrapper = document.createElement('div');
   const label = document.createElement('label');
-  label.textContent = 'Company user ID';
+  label.textContent = 'Company user';
   label.setAttribute('for', 'companyId-' + event.id);
 
-  const input = document.createElement('input');
-  input.type = 'number';
-  input.min = '1';
-  input.id = 'companyId-' + event.id;
-  input.name = 'companyId';
-  input.placeholder = 'Example: 12';
-  input.required = true;
+  const select = document.createElement('select');
+  select.id = 'companyId-' + event.id;
+  select.name = 'companyId';
+  select.required = true;
 
-  inputWrapper.append(label, input);
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = companyUsers.length ? 'Select a company user' : 'No company users available';
+  select.appendChild(placeholder);
+
+  companyUsers.forEach(function (company) {
+    const option = document.createElement('option');
+    option.value = company.id;
+    option.textContent = company.name + ' - ' + company.email;
+    select.appendChild(option);
+  });
+
+  select.disabled = companyUsers.length === 0;
+
+  inputWrapper.append(label, select);
 
   const assignmentActions = document.createElement('div');
   assignmentActions.className = 'button-row';
@@ -191,14 +203,16 @@ function buildEventCard(event) {
   assignButton.type = 'submit';
   assignButton.className = 'button';
   assignButton.textContent = 'Assign';
+  assignButton.disabled = companyUsers.length === 0;
 
   const unassignButton = document.createElement('button');
   unassignButton.type = 'button';
   unassignButton.className = 'button button-secondary';
   unassignButton.textContent = 'Unassign';
+  unassignButton.disabled = companyUsers.length === 0;
   unassignButton.addEventListener('click', function () {
-    if (input.value) {
-      assignCompany(event.id, input.value, 'DELETE');
+    if (select.value) {
+      assignCompany(event.id, select.value, 'DELETE');
     }
   });
 
@@ -206,7 +220,7 @@ function buildEventCard(event) {
   assignmentForm.append(inputWrapper, assignmentActions);
   assignmentForm.addEventListener('submit', function (submitEvent) {
     submitEvent.preventDefault();
-    assignCompany(event.id, input.value, 'POST');
+    assignCompany(event.id, select.value, 'POST');
   });
 
   card.append(content, actionRow, assignmentForm);
@@ -449,6 +463,16 @@ async function loadEvents() {
   }
 }
 
+async function loadCompanies() {
+  try {
+    companyUsers = await CVQR.request('/admin/companies', {
+      headers: CVQR.authHeaders()
+    });
+  } catch (error) {
+    CVQR.showMessage(eventMessage, error.message, 'error');
+  }
+}
+
 async function loadEventDetails(event) {
   selectedEventId = event.id;
   CVQR.showMessage(eventDetailsMessage, '', 'error');
@@ -483,9 +507,10 @@ async function loadAdminList() {
 
 async function refreshAdminDashboard() {
   await Promise.all([
-    loadEvents(),
+    loadCompanies(),
     loadAdminList()
   ]);
+  await loadEvents();
 }
 
 if (CVQR.requireRole('admin', '02-login.html')) {
