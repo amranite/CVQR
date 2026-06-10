@@ -135,14 +135,14 @@ async function cleanup() {
 async function assertStaticPagesLoad() {
     const pages = [
         "/",
-        "/01-register.html",
-        "/02-login.html",
-        "/03-student-home.html",
-        "/04-student-cv.html",
-        "/05-company-scanner.html",
-        "/06-company-cv-view.html",
-        "/07-company-scan-history.html",
-        "/08-admin-cv-list.html"
+        "/register/",
+        "/login/",
+        "/student/",
+        "/student/cv/",
+        "/company/",
+        "/company/cv/",
+        "/company/history/",
+        "/admin/"
     ];
 
     for (const page of pages) {

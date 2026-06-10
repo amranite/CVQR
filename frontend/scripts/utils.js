@@ -99,7 +99,7 @@
     const role = getRole();
 
     if (!token || !role || (expectedRole && role !== expectedRole)) {
-      window.location.href = redirectPage || '02-login.html';
+      window.location.href = redirectPage || '/login/';
       return false;
     }
 
@@ -108,21 +108,21 @@
 
   function redirectByRole(role) {
     if (role === 'student') {
-      window.location.href = '03-student-home.html';
+      window.location.href = '/student/';
       return;
     }
 
     if (role === 'company') {
-      window.location.href = '05-company-scanner.html';
+      window.location.href = '/company/';
       return;
     }
 
     if (role === 'admin') {
-      window.location.href = '08-admin-cv-list.html';
+      window.location.href = '/admin/';
       return;
     }
 
-    window.location.href = '02-login.html';
+    window.location.href = '/login/';
   }
 
   function formatDateTime(value) {

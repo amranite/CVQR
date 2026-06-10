@@ -21,7 +21,7 @@ let selectedEventId = null;
 
 function handleAdminLogout() {
   CVQR.clearSession();
-  window.location.href = '02-login.html';
+  window.location.href = '/login/';
 }
 
 function appendMeta(container, text) {
@@ -513,7 +513,7 @@ async function refreshAdminDashboard() {
   await loadEvents();
 }
 
-if (CVQR.requireRole('admin', '02-login.html')) {
+if (CVQR.requireRole('admin', '/login/')) {
   refreshAdminDashboard();
   eventForm.addEventListener('submit', saveEvent);
   cancelEditButton.addEventListener('click', resetEventForm);

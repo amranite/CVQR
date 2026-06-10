@@ -6,21 +6,21 @@
   <title>CVQR - Student dashboard</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="/css/common.css">
 </head>
 <body>
 
   <header class="site-header dashboard-header">
     <div class="container header-inner">
-      <div class="brand">
+      <a class="brand" href="/" aria-label="CVQR home">
         <i class="fa-solid fa-user-graduate"></i>
         <div>
           <h1>Student dashboard</h1>
           <p>Manage your CV, event registration, and QR code.</p>
         </div>
-      </div>
+      </a>
       <nav class="header-actions">
-        <a class="button button-secondary" href="04-student-cv.html">My CV</a>
+        <a class="button button-secondary" href="/student/cv/">My CV</a>
         <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
@@ -85,8 +85,8 @@
     </section>
   </main>
 
-  <script src="scripts/config.js"></script>
-  <script src="scripts/utils.js"></script>
-  <script src="scripts/student-home.js"></script>
+  <script src="/scripts/config.js"></script>
+  <script src="/scripts/utils.js"></script>
+  <script src="/scripts/student-home.js"></script>
 </body>
 </html>

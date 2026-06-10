@@ -13,7 +13,7 @@ let scannerRunning = false;
 function handleCompanyLogout() {
   stopCamera();
   CVQR.clearSession();
-  window.location.href = '02-login.html';
+  window.location.href = '/login/';
 }
 
 async function openByToken(rawValue) {
@@ -34,7 +34,7 @@ async function openByToken(rawValue) {
     }
 
     CVQR.setLastScan({ scan: data });
-    window.location.href = '06-company-cv-view.html';
+    window.location.href = '/company/cv/';
   } catch (error) {
     CVQR.showMessage(companyScanMessage, error.message, 'error');
   }
@@ -152,7 +152,7 @@ function handleScanSubmit(event) {
   openByToken(tokenInput.value);
 }
 
-if (CVQR.requireRole('company', '02-login.html')) {
+if (CVQR.requireRole('company', '/login/')) {
   scanForm.addEventListener('submit', handleScanSubmit);
   startCameraButton.addEventListener('click', startCamera);
   stopCameraButton.addEventListener('click', stopCamera);

@@ -5,7 +5,7 @@ const logoutButtonHistory = document.querySelector('#logoutButton');
 
 function handleHistoryLogout() {
   CVQR.clearSession();
-  window.location.href = '02-login.html';
+  window.location.href = '/login/';
 }
 
 function renderEmptyHistory() {
@@ -54,7 +54,7 @@ function buildHistoryCard(item) {
   openButton.textContent = 'Open CV';
   openButton.addEventListener('click', function () {
     CVQR.setLastScan({ scan: item });
-    window.location.href = '06-company-cv-view.html';
+    window.location.href = '/company/cv/';
   });
 
   actionRow.appendChild(openButton);
@@ -90,7 +90,7 @@ async function loadHistory() {
   }
 }
 
-if (CVQR.requireRole('company', '02-login.html')) {
+if (CVQR.requireRole('company', '/login/')) {
   loadHistory();
   logoutButtonHistory.addEventListener('click', handleHistoryLogout);
 }

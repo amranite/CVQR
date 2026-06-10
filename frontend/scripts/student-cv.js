@@ -10,7 +10,7 @@ let latestCvFilePath = '';
 
 function handleStudentLogout() {
   CVQR.clearSession();
-  window.location.href = '02-login.html';
+  window.location.href = '/login/';
 }
 
 function setText(selector, value) {
@@ -112,7 +112,7 @@ async function loadCv() {
     const cvData = await requestOptional('/cv/me');
 
     if (!cvData) {
-      window.location.href = '03-student-home.html';
+      window.location.href = '/student/';
       return;
     }
 
@@ -162,7 +162,7 @@ async function handleDeleteClick() {
       headers: CVQR.authHeaders()
     });
 
-    window.location.href = '03-student-home.html';
+    window.location.href = '/student/';
   } catch (error) {
     CVQR.showMessage(studentCvMessage, error.message, 'error');
   }
@@ -202,7 +202,7 @@ async function openVersionFile(filePath) {
   }
 }
 
-if (CVQR.requireRole('student', '02-login.html')) {
+if (CVQR.requireRole('student', '/login/')) {
   loadCv();
   replaceForm.addEventListener('submit', handleReplaceSubmit);
   deleteButton.addEventListener('click', handleDeleteClick);

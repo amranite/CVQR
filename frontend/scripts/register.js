@@ -1,5 +1,6 @@
 const registerForm = document.querySelector('#registerForm');
 const registerMessage = document.querySelector('#message');
+const registrationSuccessMessage = 'Account created successfully. You can now log in.';
 
 async function handleRegisterSubmit(event) {
   event.preventDefault();
@@ -20,10 +21,8 @@ async function handleRegisterSubmit(event) {
     });
 
     registerForm.reset();
-    CVQR.showMessage(registerMessage, 'Account created. Log in now.', 'success');
-    setTimeout(function () {
-      window.location.href = '02-login.html';
-    }, 800);
+    sessionStorage.setItem('cvqr_registration_success_message', registrationSuccessMessage);
+    window.location.href = '/login/';
   } catch (error) {
     CVQR.showMessage(registerMessage, error.message, 'error');
   }
