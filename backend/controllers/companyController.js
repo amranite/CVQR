@@ -1,5 +1,62 @@
 const pool = require("../config/db");
 
+// GET /company/events
+// Returns the logged-in company user's assigned, non-closed events. The
+// frontend uses is_active to decide whether scanner controls should be shown.
+exports.getEvents = async (req, res) => {
+    try {
+        const companyId = req.user.id;
+
+        const [rows] = await pool.query(
+            `SELECT
+                events.id,
+                events.name,
+                events.location,
+                events.status,
+                events.registration_opens_at,
+                events.registration_closes_at,
+                events.starts_at,
+                events.ends_at,
+                event_companies.assigned_at,
+                (
+                    events.status = 'open'
+                    AND events.starts_at <= NOW()
+                    AND events.ends_at >= NOW()
+                    AND events.closed_at IS NULL
+                ) AS is_active,
+                (
+                    events.status = 'open'
+                    AND events.starts_at > NOW()
+                    AND events.closed_at IS NULL
+                ) AS is_future
+             FROM event_companies
+             JOIN events ON events.id = event_companies.event_id
+             WHERE event_companies.company_id = ?
+             AND events.closed_at IS NULL
+             AND events.status <> 'closed'
+             ORDER BY events.starts_at ASC, events.name ASC`,
+            [companyId]
+        );
+
+        res.json(rows.map((row) => ({
+            id: row.id,
+            name: row.name,
+            location: row.location,
+            status: row.status,
+            registration_opens_at: row.registration_opens_at,
+            registration_closes_at: row.registration_closes_at,
+            starts_at: row.starts_at,
+            ends_at: row.ends_at,
+            assigned_at: row.assigned_at,
+            is_active: Boolean(row.is_active),
+            is_future: Boolean(row.is_future)
+        })));
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // GET /company/scans
 // Returns scans for the logged-in company only while the event is still active
 // and the company remains assigned to that event.

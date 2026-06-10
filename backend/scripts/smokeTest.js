@@ -137,6 +137,24 @@ async function run() {
             "company user list should include company account"
         );
 
+        const companyEventsRes = await call(companyController.getEvents, {
+            user: { id: ids.companyId, role: "company" }
+        });
+        assertStatus(companyEventsRes, 200, "company assigned events");
+        assert(
+            companyEventsRes.body.some((event) => event.id === eventId && event.is_active),
+            "company assigned events should include active event"
+        );
+
+        const otherCompanyEventsRes = await call(companyController.getEvents, {
+            user: { id: ids.otherCompanyId, role: "company" }
+        });
+        assertStatus(otherCompanyEventsRes, 200, "unassigned company events");
+        assert(
+            !otherCompanyEventsRes.body.some((event) => event.id === eventId),
+            "unassigned company should not see event assignment"
+        );
+
         const openEventsRes = await call(eventController.getOpenEvents, {
             user: { id: ids.studentId, role: "student" }
         });
@@ -230,6 +248,15 @@ async function run() {
         assert(
             !closedHistoryRes.body.some((scan) => scan.participation_id === scanRes.body.participation_id),
             "company history should hide closed-event scans"
+        );
+
+        const closedCompanyEventsRes = await call(companyController.getEvents, {
+            user: { id: ids.companyId, role: "company" }
+        });
+        assertStatus(closedCompanyEventsRes, 200, "closed company assigned events");
+        assert(
+            !closedCompanyEventsRes.body.some((event) => event.id === eventId),
+            "company assigned events should hide closed event"
         );
 
         const closedScanRes = await call(qrController.scanQR, {
