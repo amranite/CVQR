@@ -4,7 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "db:clean": "node scripts/cleanDatabase.js",
     "http-test": "node scripts/httpIntegrationTest.js",
+    "seed:demo": "node scripts/seedDemo.js",
     "smoke": "node scripts/smokeTest.js",
     "test": "npm run smoke",
     "start": "node server.js"
