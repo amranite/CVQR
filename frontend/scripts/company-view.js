@@ -17,7 +17,7 @@ function setText(selector, value) {
 function handleViewLogout() {
   revokePreviewUrl();
   CVQR.clearSession();
-  window.location.href = '02-login.html';
+  window.location.href = '/login/';
 }
 
 function revokePreviewUrl() {
@@ -80,7 +80,7 @@ async function openPdf() {
   }
 }
 
-if (CVQR.requireRole('company', '02-login.html')) {
+if (CVQR.requireRole('company', '/login/')) {
   openPdfButton.addEventListener('click', openPdf);
   logoutButtonView.addEventListener('click', handleViewLogout);
   window.addEventListener('beforeunload', revokePreviewUrl);

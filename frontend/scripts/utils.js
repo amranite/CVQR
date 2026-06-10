@@ -99,7 +99,7 @@
     const role = getRole();
 
     if (!token || !role || (expectedRole && role !== expectedRole)) {
-      window.location.href = redirectPage || '02-login.html';
+      window.location.href = redirectPage || '/login/';
       return false;
     }
 
@@ -108,21 +108,21 @@
 
   function redirectByRole(role) {
     if (role === 'student') {
-      window.location.href = '03-student-home.html';
+      window.location.href = '/student/';
       return;
     }
 
     if (role === 'company') {
-      window.location.href = '05-company-scanner.html';
+      window.location.href = '/company/';
       return;
     }
 
     if (role === 'admin') {
-      window.location.href = '08-admin-cv-list.html';
+      window.location.href = '/admin/';
       return;
     }
 
-    window.location.href = '02-login.html';
+    window.location.href = '/login/';
   }
 
   function formatDateTime(value) {
@@ -214,6 +214,122 @@
     }, 60000);
   }
 
+  let confirmDialog = null;
+
+  function ensureConfirmDialog() {
+    if (confirmDialog) {
+      return confirmDialog;
+    }
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop hidden';
+
+    const dialog = document.createElement('section');
+    dialog.className = 'confirm-dialog';
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'confirmDialogTitle');
+
+    const title = document.createElement('h2');
+    title.id = 'confirmDialogTitle';
+
+    const message = document.createElement('p');
+    message.className = 'section-text';
+
+    const actions = document.createElement('div');
+    actions.className = 'button-row confirm-actions';
+
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.className = 'button button-secondary';
+
+    const confirmButton = document.createElement('button');
+    confirmButton.type = 'button';
+
+    actions.append(cancelButton, confirmButton);
+    dialog.append(title, message, actions);
+    backdrop.appendChild(dialog);
+    document.body.appendChild(backdrop);
+
+    confirmDialog = {
+      backdrop,
+      title,
+      message,
+      cancelButton,
+      confirmButton,
+      resolver: null,
+      previousFocus: null,
+      keyHandler: null
+    };
+
+    return confirmDialog;
+  }
+
+  function closeConfirmDialog(result) {
+    const dialog = ensureConfirmDialog();
+
+    dialog.backdrop.classList.add('hidden');
+
+    if (dialog.keyHandler) {
+      document.removeEventListener('keydown', dialog.keyHandler);
+    }
+
+    if (dialog.resolver) {
+      dialog.resolver(result);
+    }
+
+    dialog.resolver = null;
+    dialog.keyHandler = null;
+
+    if (dialog.previousFocus && typeof dialog.previousFocus.focus === 'function') {
+      dialog.previousFocus.focus();
+    }
+  }
+
+  function confirmAction(options) {
+    const dialog = ensureConfirmDialog();
+    const settings = options || {};
+
+    if (dialog.resolver) {
+      closeConfirmDialog(false);
+    }
+
+    dialog.title.textContent = settings.title || 'Confirm action';
+    dialog.message.textContent = settings.message || 'Do you want to continue?';
+    dialog.cancelButton.textContent = settings.cancelLabel || 'Cancel';
+    dialog.confirmButton.textContent = settings.confirmLabel || 'Confirm';
+    dialog.confirmButton.className = settings.variant === 'danger' ? 'button button-danger' : 'button';
+    dialog.previousFocus = document.activeElement;
+
+    return new Promise(function (resolve) {
+      dialog.resolver = resolve;
+
+      dialog.keyHandler = function (event) {
+        if (event.key === 'Escape') {
+          closeConfirmDialog(false);
+        }
+      };
+
+      dialog.cancelButton.onclick = function () {
+        closeConfirmDialog(false);
+      };
+
+      dialog.confirmButton.onclick = function () {
+        closeConfirmDialog(true);
+      };
+
+      dialog.backdrop.onclick = function (event) {
+        if (event.target === dialog.backdrop) {
+          closeConfirmDialog(false);
+        }
+      };
+
+      document.addEventListener('keydown', dialog.keyHandler);
+      dialog.backdrop.classList.remove('hidden');
+      dialog.cancelButton.focus();
+    });
+  }
+
   window.CVQR = {
     apiBase,
     getToken,
@@ -234,6 +350,7 @@
     getLastScan,
     openPdfPath,
     getAuthenticatedFileUrl,
-    openAuthenticatedFile
+    openAuthenticatedFile,
+    confirmAction
   };
 })();

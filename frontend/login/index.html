@@ -6,22 +6,21 @@
   <title>CVQR - Login</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="/css/common.css">
 </head>
 <body>
 
   <header class="site-header">
     <div class="container header-inner">
-      <div class="brand">
+      <a class="brand" href="/" aria-label="CVQR home">
         <i class="fa-solid fa-file-lines"></i>
         <div>
           <h1>CVQR</h1>
           <p>Login</p>
         </div>
-      </div>
+      </a>
       <nav class="header-actions">
-        <a class="button button-secondary" href="index.html">Start</a>
-        <a class="button" href="01-register.html">Register</a>
+        <a class="button" href="/register/">Register</a>
       </nav>
     </div>
   </header>
@@ -42,14 +41,14 @@
         </div>
         <div class="button-row">
           <button type="submit" class="button">Log in</button>
-          <a class="button button-secondary" href="01-register.html">No account yet</a>
+          <a class="button button-secondary" href="/register/">No account yet</a>
         </div>
       </form>
     </section>
   </main>
 
-  <script src="scripts/config.js"></script>
-  <script src="scripts/utils.js"></script>
-  <script src="scripts/login.js"></script>
+  <script src="/scripts/config.js"></script>
+  <script src="/scripts/utils.js"></script>
+  <script src="/scripts/login.js"></script>
 </body>
 </html>

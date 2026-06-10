@@ -7,28 +7,38 @@
    <title>CVQR - Company scanner</title>
    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-   <link rel="stylesheet" href="css/common.css">
+   <link rel="stylesheet" href="/css/common.css">
 </head>
 
 <body>
    <header class="site-header dashboard-header">
       <div class="container header-inner">
-         <div class="brand">
+         <a class="brand" href="/" aria-label="CVQR home">
             <i class="fa-solid fa-building"></i>
             <div>
                <h1>Company scanner</h1>
                <p>Scan a QR code, upload an image, or enter a token.</p>
             </div>
-         </div>
+         </a>
          <nav class="header-actions">
-            <a class="button button-secondary" href="07-company-scan-history.html">History</a>
+            <a class="button button-secondary" href="/company/history/">History</a>
             <button type="button" class="button logout-button" id="logoutButton">Log out</button>
          </nav>
       </div>
    </header>
 
-   <main class="container page-main two-column wide-left">
+   <main class="container page-main grid">
       <section class="card">
+         <div class="section-head">
+            <div>
+               <h2>Assigned events</h2>
+               <p id="assignmentSummary" class="section-text">Checking event assignment.</p>
+            </div>
+         </div>
+         <div id="companyEventsList" class="card-list"></div>
+      </section>
+
+      <section class="card hidden" id="scannerPanel">
          <h2>QR scanner</h2>
          <p class="section-text">Use your camera, choose a QR image, or paste a token/URL.</p>
          <div id="message" class="message hidden"></div>
@@ -44,7 +54,7 @@
          </div>
       </section>
 
-      <section class="card aside-card">
+      <section class="card aside-card hidden" id="tokenPanel">
          <h2>Token of URL</h2>
          <form id="scanForm" class="stack-form">
             <div>
@@ -58,9 +68,9 @@
       </section>
    </main>
    <script src="https://unpkg.com/html5-qrcode"></script>
-   <script src="scripts/config.js"></script>
-   <script src="scripts/utils.js"></script>
-   <script src="scripts/company-scan.js"></script>
+   <script src="/scripts/config.js"></script>
+   <script src="/scripts/utils.js"></script>
+   <script src="/scripts/company-scan.js"></script>
 </body>
 
 </html>

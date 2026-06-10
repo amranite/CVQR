@@ -12,7 +12,7 @@ let latestCvPath = '';
 
 function handleLogout() {
   CVQR.clearSession();
-  window.location.href = '02-login.html';
+  window.location.href = '/login/';
 }
 
 function setText(selector, value) {
@@ -236,7 +236,7 @@ async function openCurrentCv() {
   }
 }
 
-if (CVQR.requireRole('student', '02-login.html')) {
+if (CVQR.requireRole('student', '/login/')) {
   loadDashboard();
   uploadForm.addEventListener('submit', handleUploadSubmit);
   logoutButtonHome.addEventListener('click', handleLogout);

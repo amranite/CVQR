@@ -135,14 +135,14 @@ async function cleanup() {
 async function assertStaticPagesLoad() {
     const pages = [
         "/",
-        "/01-register.html",
-        "/02-login.html",
-        "/03-student-home.html",
-        "/04-student-cv.html",
-        "/05-company-scanner.html",
-        "/06-company-cv-view.html",
-        "/07-company-scan-history.html",
-        "/08-admin-cv-list.html"
+        "/register/",
+        "/login/",
+        "/student/",
+        "/student/cv/",
+        "/company/",
+        "/company/cv/",
+        "/company/history/",
+        "/admin/"
     ];
 
     for (const page of pages) {
@@ -223,6 +223,14 @@ async function run() {
         headers: authHeaders(adminToken)
     });
 
+    const { data: assignedEvents } = await request("/company/events", {
+        headers: authHeaders(companyToken)
+    });
+    assert(
+        assignedEvents.some((event) => event.id === eventId && event.is_active),
+        "Company assigned events missing active event"
+    );
+
     await uploadStudentCv(studentToken);
 
     const { data: openEvents } = await request("/events/open", {
@@ -294,6 +302,14 @@ async function run() {
     assert(
         !closedHistory.some((scan) => scan.participation_id === scanData.participation_id),
         "Closed event scan remained visible to company"
+    );
+
+    const { data: closedAssignedEvents } = await request("/company/events", {
+        headers: authHeaders(companyToken)
+    });
+    assert(
+        !closedAssignedEvents.some((event) => event.id === eventId),
+        "Closed event remained visible in company assigned events"
     );
 
     const closedScanResponse = await fetch(baseUrl + `/qr/${qrData.token}`, {
