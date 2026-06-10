@@ -1,5 +1,19 @@
 @charset "utf-8";
 
+:root {
+   --color-primary: #0f4c81;
+   --color-primary-hover: #0b3d68;
+   --color-success: #3cb497;
+   --color-success-bg: #e7f7f3;
+   --color-success-text: #176d5a;
+   --color-success-border: #9adfd0;
+   --color-danger: #e73f16;
+   --color-danger-hover: #b73110;
+   --color-danger-bg: #fff0eb;
+   --color-danger-text: #a42a0f;
+   --color-danger-border: #f3aa96;
+}
+
 * {
    box-sizing: border-box;
 }
@@ -17,11 +31,11 @@ body {
 }
 
 a {
-   color: #0f4c81;
+   color: var(--color-primary);
 }
 
 a:hover {
-   color: #0b3d68;
+   color: var(--color-primary-hover);
 }
 
 img {
@@ -74,38 +88,43 @@ select {
    justify-content: center;
    gap: 0.5rem;
    padding: 0.8rem 1.25rem;
-   border: 1px solid #0f4c81;
+   border: 1px solid var(--color-primary);
    border-radius: 0.5rem;
-   background-color: #0f4c81;
+   background-color: var(--color-primary);
    color: #ffffff;
    text-decoration: none;
    cursor: pointer;
 }
 
 .button:hover {
-   background-color: #0b3d68;
-   border-color: #0b3d68;
+   background-color: var(--color-primary-hover);
+   border-color: var(--color-primary-hover);
    color: #ffffff;
+}
+
+.button:disabled {
+   opacity: 0.58;
+   cursor: not-allowed;
 }
 
 .button-secondary {
    background-color: #ffffff;
-   color: #0f4c81;
+   color: var(--color-primary);
 }
 
 .button-secondary:hover {
    background-color: #ebf2f8;
-   color: #0b3d68;
+   color: var(--color-primary-hover);
 }
 
 .button-danger {
-   background-color: #b42318;
-   border-color: #b42318;
+   background-color: var(--color-danger);
+   border-color: var(--color-danger);
 }
 
 .button-danger:hover {
-   background-color: #8f1c13;
-   border-color: #8f1c13;
+   background-color: var(--color-danger-hover);
+   border-color: var(--color-danger-hover);
 }
 
 .card {
@@ -134,7 +153,7 @@ select {
    font-size: 0.9rem;
    font-weight: bold;
    text-transform: uppercase;
-   color: #0f4c81;
+   color: var(--color-primary);
 }
 
 .message {
@@ -144,15 +163,15 @@ select {
 }
 
 .message.error {
-   background-color: #fdecea;
-   color: #912018;
-   border: 1px solid #efb7b0;
+   background-color: var(--color-danger-bg);
+   color: var(--color-danger-text);
+   border: 1px solid var(--color-danger-border);
 }
 
 .message.success {
-   background-color: #eafaf1;
-   color: #1d6a3a;
-   border: 1px solid #a8e0bc;
+   background-color: var(--color-success-bg);
+   color: var(--color-success-text);
+   border: 1px solid var(--color-success-border);
 }
 
 .stack-form>div {
@@ -176,7 +195,7 @@ select {
 
 .stack-form input:focus,
 .stack-form select:focus {
-   border-color: #0f4c81;
+   border-color: var(--color-primary);
    outline: 2px solid rgba(15, 76, 129, 0.18);
 }
 
@@ -212,7 +231,7 @@ select {
 
 .brand i {
    font-size: 2rem;
-   color: #0f4c81;
+   color: var(--color-primary);
 }
 
 .brand h1 {
@@ -254,7 +273,7 @@ select {
 
 .nav-card i {
    font-size: 1.75rem;
-   color: #0f4c81;
+   color: var(--color-primary);
 }
 
 .nav-card a {
@@ -275,7 +294,7 @@ select {
 }
 
 .feature-list i {
-   color: #0f4c81;
+   color: var(--color-primary);
    min-width: 1.25rem;
    margin-top: 0.15rem;
 }
@@ -373,6 +392,82 @@ select {
    gap: 1rem;
    align-items: flex-start;
    margin-bottom: 1rem;
+}
+
+.status-row {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 0.75rem;
+   margin-bottom: 0.75rem;
+}
+
+.status-row .eyebrow {
+   margin-bottom: 0;
+}
+
+.live-indicator {
+   display: inline-flex;
+   align-items: center;
+   gap: 0.4rem;
+   color: var(--color-success-text);
+   font-size: 0.85rem;
+   font-weight: bold;
+}
+
+.live-dot {
+   width: 0.65rem;
+   height: 0.65rem;
+   border-radius: 999px;
+   background-color: var(--color-success);
+   box-shadow: 0 0 0 0 rgba(60, 180, 151, 0.55);
+   animation: live-pulse 1.6s ease-out infinite;
+}
+
+@keyframes live-pulse {
+   0% {
+      box-shadow: 0 0 0 0 rgba(60, 180, 151, 0.55);
+   }
+
+   70% {
+      box-shadow: 0 0 0 0.55rem rgba(60, 180, 151, 0);
+   }
+
+   100% {
+      box-shadow: 0 0 0 0 rgba(60, 180, 151, 0);
+   }
+}
+
+.modal-backdrop {
+   position: fixed;
+   inset: 0;
+   z-index: 30;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 1rem;
+   background-color: rgba(15, 23, 32, 0.54);
+}
+
+.modal-backdrop.hidden {
+   display: none;
+}
+
+.confirm-dialog {
+   width: min(28rem, 100%);
+   padding: 1.25rem;
+   border-radius: 0.5rem;
+   background-color: #ffffff;
+   box-shadow: 0 1rem 2.5rem rgba(15, 23, 32, 0.22);
+}
+
+.confirm-dialog h2 {
+   margin-top: 0;
+   margin-bottom: 0.5rem;
+}
+
+.confirm-actions {
+   justify-content: flex-end;
 }
 
 

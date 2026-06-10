@@ -148,7 +148,12 @@ async function handleReplaceSubmit(event) {
 }
 
 async function handleDeleteClick() {
-  const confirmed = window.confirm('Do you want to delete your CV?');
+  const confirmed = await CVQR.confirmAction({
+    title: 'Delete CV?',
+    message: 'Delete your CV and retained versions from the app?',
+    confirmLabel: 'Delete CV',
+    variant: 'danger'
+  });
 
   if (!confirmed) {
     return;

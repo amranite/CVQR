@@ -4,7 +4,9 @@ const cvCount = document.querySelector('#cvCount');
 const logoutButtonAdmin = document.querySelector('#logoutButton');
 const refreshButton = document.querySelector('#refreshButton');
 const eventForm = document.querySelector('#eventForm');
+const eventFormPanel = document.querySelector('#eventFormPanel');
 const eventFormTitle = document.querySelector('#eventFormTitle');
+const createEventButton = document.querySelector('#createEventButton');
 const saveEventButton = document.querySelector('#saveEventButton');
 const cancelEditButton = document.querySelector('#cancelEditButton');
 const eventMessage = document.querySelector('#eventMessage');
@@ -98,7 +100,22 @@ function resetEventForm() {
   document.querySelector('#eventId').value = '';
   eventFormTitle.textContent = 'Create event';
   saveEventButton.textContent = 'Create event';
+  eventFormPanel.classList.add('hidden');
+  createEventButton.classList.remove('hidden');
   cancelEditButton.classList.add('hidden');
+}
+
+function showEventForm(mode) {
+  eventFormPanel.classList.remove('hidden');
+  createEventButton.classList.add('hidden');
+  cancelEditButton.classList.remove('hidden');
+
+  if (mode === 'create') {
+    eventForm.reset();
+    document.querySelector('#eventId').value = '';
+    eventFormTitle.textContent = 'Create event';
+    saveEventButton.textContent = 'Create event';
+  }
 }
 
 function fillEventForm(event) {
@@ -111,7 +128,7 @@ function fillEventForm(event) {
   document.querySelector('#endsAt').value = toDateTimeInput(event.ends_at);
   eventFormTitle.textContent = 'Edit event';
   saveEventButton.textContent = 'Save event';
-  cancelEditButton.classList.remove('hidden');
+  showEventForm('edit');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -122,12 +139,51 @@ function renderStatusBadge(status) {
   return badge;
 }
 
+function isEventLive(event) {
+  if (!event || event.status !== 'open') {
+    return false;
+  }
+
+  const now = Date.now();
+  const startsAt = new Date(event.starts_at).getTime();
+  const endsAt = new Date(event.ends_at).getTime();
+
+  if (Number.isNaN(startsAt) || Number.isNaN(endsAt)) {
+    return false;
+  }
+
+  return startsAt <= now && now <= endsAt;
+}
+
+function renderEventStatus(event) {
+  const row = document.createElement('div');
+  row.className = 'status-row';
+  row.appendChild(renderStatusBadge(event.status));
+
+  if (isEventLive(event)) {
+    const live = document.createElement('span');
+    live.className = 'live-indicator';
+
+    const dot = document.createElement('span');
+    dot.className = 'live-dot';
+    dot.setAttribute('aria-hidden', 'true');
+
+    const text = document.createElement('span');
+    text.textContent = 'Live';
+
+    live.append(dot, text);
+    row.appendChild(live);
+  }
+
+  return row;
+}
+
 function buildEventCard(event) {
   const card = document.createElement('article');
   card.className = 'list-card';
 
   const content = document.createElement('div');
-  content.appendChild(renderStatusBadge(event.status));
+  content.appendChild(renderEventStatus(event));
 
   const title = document.createElement('h3');
   title.textContent = event.name || 'Untitled event';
@@ -366,7 +422,12 @@ async function openAdminCv(path) {
 }
 
 async function deleteStudentCv(studentId, studentName) {
-  const confirmed = window.confirm('Delete CV for ' + studentName + '?');
+  const confirmed = await CVQR.confirmAction({
+    title: 'Delete CV?',
+    message: 'Delete CV for ' + studentName + '? This removes the retained versions from the app.',
+    confirmLabel: 'Delete CV',
+    variant: 'danger'
+  });
 
   if (!confirmed) {
     return;
@@ -408,7 +469,15 @@ async function saveEvent(event) {
 }
 
 async function changeEventStatus(event, action) {
-  const confirmed = window.confirm((action === 'open' ? 'Open' : 'Close') + ' event "' + event.name + '"?');
+  const isClosing = action === 'close';
+  const confirmed = await CVQR.confirmAction({
+    title: (isClosing ? 'Close' : 'Open') + ' event?',
+    message: isClosing
+      ? 'Close "' + event.name + '"? Company users will lose app access to this event and its scanned CVs.'
+      : 'Open "' + event.name + '" for registration and scanning?',
+    confirmLabel: isClosing ? 'Close event' : 'Open event',
+    variant: isClosing ? 'danger' : 'default'
+  });
 
   if (!confirmed) {
     return;
@@ -514,8 +583,12 @@ async function refreshAdminDashboard() {
 }
 
 if (CVQR.requireRole('admin', '/login/')) {
+  resetEventForm();
   refreshAdminDashboard();
   eventForm.addEventListener('submit', saveEvent);
+  createEventButton.addEventListener('click', function () {
+    showEventForm('create');
+  });
   cancelEditButton.addEventListener('click', resetEventForm);
   refreshButton.addEventListener('click', refreshAdminDashboard);
   logoutButtonAdmin.addEventListener('click', handleAdminLogout);
