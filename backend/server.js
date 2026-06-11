@@ -17,15 +17,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, "../frontend")));
+app.use("/api/auth", authRoutes);
+app.use("/api/cv", cvRoutes);
+app.use("/api/qr", qrRoutes);
+app.use("/api/company", companyRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/participations", participationRoutes);
 
-app.use("/auth", authRoutes);
-app.use("/cv", cvRoutes);
-app.use("/qr", qrRoutes);
-app.use("/company", companyRoutes);
-app.use("/admin", adminRoutes);
-app.use("/events", eventRoutes);
-app.use("/participations", participationRoutes);
+app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));

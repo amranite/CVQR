@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Admin companies</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <a class="brand" href="/admin/companies/" data-refresh-current aria-label="Refresh companies">
+        <i class="fa-solid fa-building"></i>
+        <div>
+          <h1>Companies</h1>
+          <p>Review company accounts and their event assignments.</p>
+        </div>
+      </a>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="/admin/">Dashboard</a>
+        <a class="button button-secondary" href="/admin/events/">Events</a>
+        <a class="button button-secondary is-active" href="/admin/companies/">Companies</a>
+        <a class="button button-secondary" href="/admin/cvs/">CVs</a>
+        <a class="button button-secondary" href="/admin/registrations/">Registrations</a>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main grid">
+    <div id="companiesMessage" class="message hidden"></div>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Company accounts</h2>
+          <p id="companyCount" class="section-text">0 results</p>
+        </div>
+        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="companiesList" class="card-list compact-card-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Assignments</h2>
+          <p id="assignmentCount" class="section-text">0 results</p>
+        </div>
+      </div>
+      <div id="assignmentsList" class="card-list compact-card-list"></div>
+    </section>
+  </main>
+
+  <script src="/scripts/config.js"></script>
+  <script src="/scripts/utils.js"></script>
+  <script src="/scripts/admin-shared.js"></script>
+  <script src="/scripts/admin-companies.js"></script>
+</body>
+</html>

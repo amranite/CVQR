@@ -13,7 +13,7 @@
 <body>
    <header class="site-header dashboard-header">
       <div class="container header-inner">
-         <a class="brand" href="/" aria-label="CVQR home">
+         <a class="brand" href="/company/" data-refresh-current aria-label="Refresh company scanner">
             <i class="fa-solid fa-building"></i>
             <div>
                <h1>Company scanner</h1>
@@ -28,19 +28,17 @@
    </header>
 
    <main class="container page-main grid">
-      <section class="card">
-         <div class="section-head">
-            <div>
-               <h2>Assigned events</h2>
-               <p id="assignmentSummary" class="section-text">Checking event assignment.</p>
-            </div>
-         </div>
-         <div id="companyEventsList" class="card-list"></div>
+      <section class="card" id="accessNotice">
+         <div class="empty-state">Checking event assignment.</div>
       </section>
 
-      <section class="card hidden" id="scannerPanel">
-         <h2>QR scanner</h2>
-         <p class="section-text">Use your camera, choose a QR image, or paste a token/URL.</p>
+      <section class="card scanner-primary hidden" id="scannerPanel">
+         <div class="section-head">
+            <div>
+               <h2>QR scanner</h2>
+               <p class="section-text">Scan a student QR code with the camera or from an image.</p>
+            </div>
+         </div>
          <div id="message" class="message hidden"></div>
 
          <div id="reader" class="scanner-reader"></div>
@@ -55,16 +53,26 @@
       </section>
 
       <section class="card aside-card hidden" id="tokenPanel">
-         <h2>Token of URL</h2>
+         <h2>Token or URL</h2>
          <form id="scanForm" class="stack-form">
             <div>
-               <label for="token">QR token of URL</label>
-               <input type="text" id="token" name="token" placeholder="http://localhost:3000/qr/... or just the token" required>
+               <label for="token">QR token or URL</label>
+               <input type="text" id="token" name="token" placeholder="http://localhost:3000/api/qr/... or just the token" required>
             </div>
             <div class="button-row">
                <button type="submit" class="button">Open CV</button>
             </div>
          </form>
+      </section>
+
+      <section class="card compact-section hidden" id="assignmentSection">
+         <div class="section-head compact-section-head">
+            <div>
+               <h2>Assigned events</h2>
+               <p id="assignmentSummary" class="section-text">Checking event assignment.</p>
+            </div>
+         </div>
+         <div id="companyEventsList" class="card-list compact-card-list"></div>
       </section>
    </main>
    <script src="https://unpkg.com/html5-qrcode"></script>

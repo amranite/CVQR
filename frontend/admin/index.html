@@ -12,108 +12,71 @@
 
   <header class="site-header dashboard-header">
     <div class="container header-inner">
-      <a class="brand" href="/" aria-label="CVQR home">
+      <a class="brand" href="/admin/" data-refresh-current aria-label="Refresh admin dashboard">
         <i class="fa-solid fa-shield-halved"></i>
         <div>
           <h1>Admin dashboard</h1>
-          <p>Manage events, company access, registrations, scans, and CVs.</p>
+          <p>Review the event workflow and jump into the area you need.</p>
         </div>
       </a>
       <nav class="header-actions">
-        <button type="button" class="button button-secondary" id="refreshButton">Refresh</button>
+        <a class="button button-secondary is-active" href="/admin/">Dashboard</a>
+        <a class="button button-secondary" href="/admin/events/">Events</a>
+        <a class="button button-secondary" href="/admin/companies/">Companies</a>
+        <a class="button button-secondary" href="/admin/cvs/">CVs</a>
+        <a class="button button-secondary" href="/admin/registrations/">Registrations</a>
+        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
         <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
   </header>
 
   <main class="container page-main grid">
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>Event setup</h2>
-          <p class="section-text">Create a draft event, or edit an existing one from the event list.</p>
-        </div>
-        <div class="button-row">
-          <button type="button" class="button" id="createEventButton">Create event</button>
-          <button type="button" class="button button-secondary hidden" id="cancelEditButton">Cancel</button>
-        </div>
-      </div>
-      <div id="eventMessage" class="message hidden"></div>
-      <div id="eventFormPanel" class="hidden">
-        <h3 id="eventFormTitle">Create event</h3>
-        <form id="eventForm" class="stack-form">
-          <input type="hidden" id="eventId" name="eventId">
-          <div>
-            <label for="eventName">Name</label>
-            <input type="text" id="eventName" name="name" required>
-          </div>
-          <div>
-            <label for="eventLocation">Location</label>
-            <input type="text" id="eventLocation" name="location" required>
-          </div>
-          <div>
-            <label for="registrationOpensAt">Registration opens at</label>
-            <input type="datetime-local" id="registrationOpensAt" name="registration_opens_at" required>
-          </div>
-          <div>
-            <label for="registrationClosesAt">Registration closes at</label>
-            <input type="datetime-local" id="registrationClosesAt" name="registration_closes_at" required>
-          </div>
-          <div>
-            <label for="startsAt">Event starts at</label>
-            <input type="datetime-local" id="startsAt" name="starts_at" required>
-          </div>
-          <div>
-            <label for="endsAt">Event ends at</label>
-            <input type="datetime-local" id="endsAt" name="ends_at" required>
-          </div>
-          <div class="button-row">
-            <button type="submit" class="button" id="saveEventButton">Create event</button>
-          </div>
-        </form>
-      </div>
+    <div id="dashboardMessage" class="message hidden"></div>
+
+    <section class="dashboard-tiles" aria-label="Admin areas">
+      <a class="dashboard-tile" href="/admin/events/">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Events</span>
+        <strong id="eventsMetric">-</strong>
+        <small id="eventsHint">Loading events</small>
+      </a>
+      <a class="dashboard-tile" href="/admin/companies/">
+        <i class="fa-solid fa-building"></i>
+        <span>Companies</span>
+        <strong id="companiesMetric">-</strong>
+        <small id="companiesHint">Loading companies</small>
+      </a>
+      <a class="dashboard-tile" href="/admin/cvs/">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>CVs</span>
+        <strong id="cvsMetric">-</strong>
+        <small id="cvsHint">Loading CVs</small>
+      </a>
+      <a class="dashboard-tile" href="/admin/registrations/">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>Registrations</span>
+        <strong id="registrationsMetric">-</strong>
+        <small id="registrationsHint">Loading registrations</small>
+      </a>
     </section>
 
     <section class="card">
       <div class="section-head">
         <div>
-          <h2>Events</h2>
-          <p id="eventCount" class="section-text">0 results</p>
+          <h2>Live and upcoming events</h2>
+          <p class="section-text">Events that currently need the most operational attention.</p>
         </div>
+        <a class="button" href="/admin/events/"><i class="fa-solid fa-arrow-right"></i> Manage events</a>
       </div>
-      <div id="eventsList" class="card-list"></div>
+      <div id="priorityEventsList" class="card-list compact-card-list"></div>
     </section>
 
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>Event details</h2>
-          <p id="selectedEventName" class="section-text">Select an event to inspect registrations and scans.</p>
-        </div>
-      </div>
-      <div id="eventDetailsMessage" class="message hidden"></div>
-
-      <h3>Registered students</h3>
-      <div id="participationsList" class="card-list"></div>
-
-      <h3>Scan audit</h3>
-      <div id="scansList" class="card-list"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>CVs</h2>
-          <p id="cvCount" class="section-text">0 results</p>
-        </div>
-      </div>
-      <div id="message" class="message hidden"></div>
-      <div id="cvList" class="card-list"></div>
-    </section>
   </main>
 
   <script src="/scripts/config.js"></script>
   <script src="/scripts/utils.js"></script>
-  <script src="/scripts/admin-cv-list.js"></script>
+  <script src="/scripts/admin-shared.js"></script>
+  <script src="/scripts/admin-dashboard.js"></script>
 </body>
 </html>

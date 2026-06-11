@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Admin registrations</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <a class="brand" href="/admin/registrations/" data-refresh-current aria-label="Refresh registrations">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <div>
+          <h1>Registrations</h1>
+          <p>View student participations and company event assignments.</p>
+        </div>
+      </a>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="/admin/">Dashboard</a>
+        <a class="button button-secondary" href="/admin/events/">Events</a>
+        <a class="button button-secondary" href="/admin/companies/">Companies</a>
+        <a class="button button-secondary" href="/admin/cvs/">CVs</a>
+        <a class="button button-secondary is-active" href="/admin/registrations/">Registrations</a>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main grid">
+    <div id="registrationsMessage" class="message hidden"></div>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Student participations</h2>
+          <p id="studentRegistrationCount" class="section-text">0 results</p>
+        </div>
+        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="studentRegistrationsList" class="card-list compact-card-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Company assignments</h2>
+          <p id="companyAssignmentCount" class="section-text">0 results</p>
+        </div>
+      </div>
+      <div id="companyAssignmentsList" class="card-list compact-card-list"></div>
+    </section>
+  </main>
+
+  <script src="/scripts/config.js"></script>
+  <script src="/scripts/utils.js"></script>
+  <script src="/scripts/admin-shared.js"></script>
+  <script src="/scripts/admin-registrations.js"></script>
+</body>
+</html>

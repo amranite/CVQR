@@ -9,6 +9,7 @@ const {
     getStudentCv
 } = require("../utils/cvVersions");
 const {
+    buildQrUrl,
     buildQrPayload,
     getActiveQrTokenForParticipation,
     getOrCreateActiveQrTokenForParticipation
@@ -90,7 +91,7 @@ async function mapParticipationResponse(row, includeQrImage = false) {
     if (row.qr_token) {
         const payload = includeQrImage
             ? await buildQrPayload(row.qr_token)
-            : { qrUrl: `${process.env.BASE_URL}/qr/${row.qr_token}` };
+            : { qrUrl: buildQrUrl(row.qr_token) };
 
         qr = {
             id: row.qr_token_id,

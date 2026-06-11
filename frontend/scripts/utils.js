@@ -3,6 +3,62 @@
     return (window.CVQR_CONFIG && window.CVQR_CONFIG.API_BASE_URL) || 'http://localhost:3000';
   }
 
+  function apiUrl(path) {
+    const base = apiBase().replace(/\/$/, '');
+    return base.endsWith('/api') ? base + path : base + '/api' + path;
+  }
+
+  function bindRefreshCurrentLinks() {
+    document.querySelectorAll('[data-refresh-current]').forEach(function (link) {
+      link.href = window.location.href;
+      link.addEventListener('click', function (event) {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+          return;
+        }
+
+        event.preventDefault();
+        window.location.reload();
+      });
+    });
+  }
+
+  function bindHeaderMenus() {
+    document.querySelectorAll('.header-actions').forEach(function (nav, index) {
+      const headerInner = nav.closest('.header-inner');
+
+      if (!headerInner || nav.dataset.menuBound === 'true') {
+        return;
+      }
+
+      const button = document.createElement('button');
+      const menuId = nav.id || 'header-actions-' + index;
+
+      nav.id = menuId;
+      nav.dataset.menuBound = 'true';
+      nav.classList.add('is-collapsible');
+
+      button.type = 'button';
+      button.className = 'header-menu-toggle';
+      button.setAttribute('aria-controls', menuId);
+      button.setAttribute('aria-expanded', 'false');
+      button.innerHTML = '<span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span class="visually-hidden">Toggle navigation</span>';
+
+      button.addEventListener('click', function () {
+        const isOpen = nav.classList.toggle('is-open');
+        button.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      nav.addEventListener('click', function (event) {
+        if (event.target.closest('a')) {
+          nav.classList.remove('is-open');
+          button.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      headerInner.insertBefore(button, nav);
+    });
+  }
+
   function getToken() {
     return localStorage.getItem('cvqr_token') || '';
   }
@@ -61,7 +117,7 @@
   }
 
   async function request(path, options) {
-    const response = await fetch(apiBase() + path, options || {});
+    const response = await fetch(apiUrl(path), options || {});
     const contentType = response.headers.get('content-type') || '';
     let data = null;
 
@@ -182,11 +238,11 @@
   }
 
   function openPdfPath(relativePath) {
-    return apiBase() + relativePath;
+    return apiUrl(relativePath);
   }
 
   async function getAuthenticatedFileUrl(relativePath) {
-    const response = await fetch(apiBase() + relativePath, {
+    const response = await fetch(apiUrl(relativePath), {
       headers: authHeaders()
     });
 
@@ -345,6 +401,7 @@
     redirectByRole,
     formatDateTime,
     formatDate,
+    apiUrl,
     extractToken,
     setLastScan,
     getLastScan,
@@ -353,4 +410,7 @@
     openAuthenticatedFile,
     confirmAction
   };
+
+  bindRefreshCurrentLinks();
+  bindHeaderMenus();
 })();

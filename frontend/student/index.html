@@ -12,7 +12,7 @@
 
   <header class="site-header dashboard-header">
     <div class="container header-inner">
-      <a class="brand" href="/" aria-label="CVQR home">
+      <a class="brand" href="/student/" data-refresh-current aria-label="Refresh student dashboard">
         <i class="fa-solid fa-user-graduate"></i>
         <div>
           <h1>Student dashboard</h1>
@@ -26,11 +26,48 @@
     </div>
   </header>
 
-  <main class="container page-main two-column wide-right">
+  <main class="container page-main grid">
+    <div id="message" class="message hidden"></div>
+
+    <section id="qrPanel" class="card qr-hero hidden">
+      <div class="section-head">
+        <div>
+          <h2>Your event QR code</h2>
+          <p class="section-text">Show this QR code to assigned company representatives at the event.</p>
+        </div>
+        <button type="button" id="refreshButton" class="button button-secondary"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div class="qr-hero-layout">
+        <div class="qr-box qr-box-large">
+          <img id="qrImage" src="" alt="QR code for event participation">
+        </div>
+        <div class="qr-details">
+          <div id="participationDetails" class="empty-state">No active registration.</div>
+          <div class="token-box">
+            <p><strong>QR URL</strong></p>
+            <p id="qrUrl" class="token-value">-</p>
+          </div>
+          <div class="button-row">
+            <button type="button" id="generateQrButton" class="button">Activate QR</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="registrationPanel">
+      <div class="section-head">
+        <div>
+          <h2>Event registration</h2>
+          <p class="section-text">Register for one open event.</p>
+        </div>
+        <button type="button" id="registrationRefreshButton" class="button button-secondary"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="openEventsList" class="card-list"></div>
+    </section>
+
     <section class="card">
       <h2>CV</h2>
-      <p class="section-text">Choose a PDF file of up to 5 MB.</p>
-      <div id="message" class="message hidden"></div>
+      <p id="cvGuidance" class="section-text">Choose a PDF file of up to 5 MB.</p>
       <form id="uploadForm" class="stack-form" enctype="multipart/form-data">
         <div>
           <label for="cv">PDF file</label>
@@ -46,42 +83,9 @@
         <div><dt>Version</dt><dd id="currentVersion">-</dd></div>
         <div><dt>Uploaded at</dt><dd id="currentUploadedAt">-</dd></div>
       </dl>
-      <div class="button-row">
+      <div class="button-row cv-actions">
         <button type="button" id="openCurrentCvButton" class="button button-secondary hidden">Open CV</button>
       </div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>Event</h2>
-          <p class="section-text">Register for an open event.</p>
-        </div>
-        <button type="button" id="refreshButton" class="button button-secondary">Refresh</button>
-      </div>
-
-      <div id="participationDetails" class="empty-state">No active registration.</div>
-
-      <div class="section-head">
-        <div>
-          <h3>Open events</h3>
-        </div>
-      </div>
-      <div id="openEventsList" class="card-list"></div>
-
-      <section id="qrPanel" class="hidden">
-        <h3>QR code</h3>
-        <div class="qr-box">
-          <img id="qrImage" src="" alt="QR code for event participation">
-        </div>
-        <div class="token-box">
-          <p><strong>QR URL</strong></p>
-          <p id="qrUrl" class="token-value">-</p>
-        </div>
-        <div class="button-row">
-          <button type="button" id="generateQrButton" class="button">Activate QR</button>
-        </div>
-      </section>
     </section>
   </main>
 

@@ -103,6 +103,43 @@ async function assertCompanyUser(companyId, db = pool) {
     return rows[0];
 }
 
+async function getEventSummaryById(eventId, db = pool) {
+    const [rows] = await db.query(
+        `SELECT
+            events.*,
+            creators.name AS created_by_name,
+            COUNT(DISTINCT participations.id) AS participations_count,
+            COUNT(DISTINCT event_companies.id) AS companies_count
+         FROM events
+         LEFT JOIN users creators ON creators.id = events.created_by
+         LEFT JOIN participations ON participations.event_id = events.id
+         LEFT JOIN event_companies ON event_companies.event_id = events.id
+         WHERE events.id = ?
+         GROUP BY events.id, creators.name
+         LIMIT 1`,
+        [eventId]
+    );
+
+    return rows[0] || null;
+}
+
+async function getAssignedCompaniesForEvent(eventId, db = pool) {
+    const [rows] = await db.query(
+        `SELECT
+            users.id,
+            users.name,
+            users.email,
+            event_companies.assigned_at
+         FROM event_companies
+         JOIN users ON users.id = event_companies.company_id
+         WHERE event_companies.event_id = ?
+         ORDER BY users.name ASC, users.email ASC`,
+        [eventId]
+    );
+
+    return rows;
+}
+
 // GET /admin/cvs
 exports.getAllCvs = async (req, res) => {
     try {
@@ -252,6 +289,28 @@ exports.getEvents = async (req, res) => {
         );
 
         res.json(rows);
+
+    } catch (err) {
+        handleControllerError(res, err);
+    }
+};
+
+// GET /admin/events/:eventId
+exports.getEventDetails = async (req, res) => {
+    const { eventId } = req.params;
+
+    try {
+        const event = await getEventSummaryById(eventId);
+
+        if (!event)
+            return res.status(404).json({ error: "Event not found" });
+
+        const assignedCompanies = await getAssignedCompaniesForEvent(eventId);
+
+        res.json({
+            ...event,
+            assigned_companies: assignedCompanies
+        });
 
     } catch (err) {
         handleControllerError(res, err);
@@ -442,6 +501,142 @@ exports.unassignCompanyFromEvent = async (req, res) => {
 
     } catch (err) {
         handleValidationError(res, err);
+    }
+};
+
+// PUT /admin/events/:eventId/companies
+exports.updateEventCompanies = async (req, res) => {
+    const { eventId } = req.params;
+    const companyIds = Array.isArray(req.body.company_ids) ? req.body.company_ids : null;
+    const connection = await pool.getConnection();
+
+    try {
+        if (!companyIds)
+            return res.status(400).json({ error: "company_ids must be an array" });
+
+        const normalizedCompanyIds = [...new Set(companyIds.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0))];
+
+        if (normalizedCompanyIds.length !== companyIds.length)
+            return res.status(400).json({ error: "company_ids must contain only company user IDs" });
+
+        await connection.beginTransaction();
+        await assertEventExists(eventId, connection);
+
+        if (normalizedCompanyIds.length > 0) {
+            const [validCompanies] = await connection.query(
+                "SELECT id FROM users WHERE role = 'company' AND id IN (?)",
+                [normalizedCompanyIds]
+            );
+            const validCompanyIds = new Set(validCompanies.map((company) => Number(company.id)));
+
+            if (validCompanyIds.size !== normalizedCompanyIds.length) {
+                const err = new Error("One or more company users could not be found");
+                err.status = 400;
+                throw err;
+            }
+        }
+
+        await connection.query(
+            "DELETE FROM event_companies WHERE event_id = ?",
+            [eventId]
+        );
+
+        if (normalizedCompanyIds.length > 0) {
+            await connection.query(
+                `INSERT INTO event_companies (event_id, company_id, assigned_by)
+                 VALUES ?`,
+                [normalizedCompanyIds.map((companyId) => [eventId, companyId, req.user.id])]
+            );
+        }
+
+        await connection.commit();
+
+        const event = await getEventSummaryById(eventId);
+        const assignedCompanies = await getAssignedCompaniesForEvent(eventId);
+
+        res.json({
+            message: "Company assignments updated",
+            event: {
+                ...event,
+                assigned_companies: assignedCompanies
+            }
+        });
+
+    } catch (err) {
+        await connection.rollback();
+        handleValidationError(res, err);
+    } finally {
+        connection.release();
+    }
+};
+
+// GET /admin/registrations
+exports.getRegistrationsOverview = async (req, res) => {
+    try {
+        const [studentParticipations] = await pool.query(
+            `SELECT
+                participations.id,
+                participations.registered_at,
+                participations.updated_at,
+                events.id AS event_id,
+                events.name AS event_name,
+                events.location AS event_location,
+                events.status AS event_status,
+                events.starts_at,
+                events.ends_at,
+                students.id AS student_id,
+                students.name AS student_name,
+                students.email AS student_email,
+                latest_versions.original_name,
+                latest_versions.version_number,
+                latest_versions.uploaded_at,
+                active_qr_tokens.token AS active_qr_token
+             FROM participations
+             JOIN events ON events.id = participations.event_id
+             JOIN users students ON students.id = participations.student_id
+             LEFT JOIN cvs ON cvs.id = participations.selected_cv_id
+             LEFT JOIN (
+                SELECT cv_versions.*
+                FROM cv_versions
+                JOIN (
+                    SELECT cv_id, MAX(version_number) AS max_version
+                    FROM cv_versions
+                    GROUP BY cv_id
+                ) latest ON latest.cv_id = cv_versions.cv_id
+                    AND latest.max_version = cv_versions.version_number
+             ) latest_versions ON latest_versions.cv_id = cvs.id
+             LEFT JOIN qr_tokens active_qr_tokens
+                ON active_qr_tokens.participation_id = participations.id
+                AND active_qr_tokens.revoked_at IS NULL
+             ORDER BY events.starts_at DESC, students.name ASC`
+        );
+
+        const [companyAssignments] = await pool.query(
+            `SELECT
+                event_companies.id,
+                event_companies.assigned_at,
+                events.id AS event_id,
+                events.name AS event_name,
+                events.location AS event_location,
+                events.status AS event_status,
+                events.starts_at,
+                events.ends_at,
+                companies.id AS company_id,
+                companies.name AS company_name,
+                companies.email AS company_email
+             FROM event_companies
+             JOIN events ON events.id = event_companies.event_id
+             JOIN users companies ON companies.id = event_companies.company_id
+             ORDER BY events.starts_at DESC, companies.name ASC`
+        );
+
+        res.json({
+            student_participations: studentParticipations,
+            company_assignments: companyAssignments
+        });
+
+    } catch (err) {
+        handleControllerError(res, err);
     }
 };
 
