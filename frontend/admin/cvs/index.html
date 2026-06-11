@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Admin CVs</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <a class="brand" href="/admin/cvs/" data-refresh-current aria-label="Refresh CVs">
+        <i class="fa-solid fa-file-lines"></i>
+        <div>
+          <h1>CVs</h1>
+          <p>Review uploaded CVs and retained versions.</p>
+        </div>
+      </a>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="/admin/">Dashboard</a>
+        <a class="button button-secondary" href="/admin/events/">Events</a>
+        <a class="button button-secondary" href="/admin/companies/">Companies</a>
+        <a class="button button-secondary is-active" href="/admin/cvs/">CVs</a>
+        <a class="button button-secondary" href="/admin/registrations/">Registrations</a>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main grid">
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Uploaded CVs</h2>
+          <p id="cvCount" class="section-text">0 results</p>
+        </div>
+        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+      <div id="message" class="message hidden"></div>
+      <div id="cvList" class="card-list"></div>
+    </section>
+  </main>
+
+  <script src="/scripts/config.js"></script>
+  <script src="/scripts/utils.js"></script>
+  <script src="/scripts/admin-shared.js"></script>
+  <script src="/scripts/admin-cvs.js"></script>
+</body>
+</html>

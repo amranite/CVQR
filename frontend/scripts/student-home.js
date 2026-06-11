@@ -2,11 +2,14 @@ const studentHomeMessage = document.querySelector('#message');
 const uploadForm = document.querySelector('#uploadForm');
 const logoutButtonHome = document.querySelector('#logoutButton');
 const refreshButton = document.querySelector('#refreshButton');
+const registrationRefreshButton = document.querySelector('#registrationRefreshButton');
 const openCurrentCvButton = document.querySelector('#openCurrentCvButton');
 const openEventsList = document.querySelector('#openEventsList');
 const participationDetails = document.querySelector('#participationDetails');
 const qrPanel = document.querySelector('#qrPanel');
+const registrationPanel = document.querySelector('#registrationPanel');
 const generateQrButton = document.querySelector('#generateQrButton');
+const cvGuidance = document.querySelector('#cvGuidance');
 
 let latestCvPath = '';
 
@@ -37,7 +40,7 @@ async function requestOptional(path) {
   }
 }
 
-function renderCv(cv) {
+function renderCv(cv, participation) {
   const latestVersion = cv && cv.latest_version ? cv.latest_version : null;
   latestCvPath = latestVersion ? '/cv/version/' + latestVersion.id + '/file' : '';
 
@@ -46,12 +49,22 @@ function renderCv(cv) {
   setText('#currentUploadedAt', latestVersion ? CVQR.formatDateTime(latestVersion.uploaded_at) : '-');
 
   openCurrentCvButton.classList.toggle('hidden', !latestCvPath);
+
+  if (!latestVersion && participation) {
+    cvGuidance.textContent = 'Upload your CV to generate your event QR code.';
+  } else if (!latestVersion) {
+    cvGuidance.textContent = 'Upload your CV before or after registering for an open event.';
+  } else if (participation) {
+    cvGuidance.textContent = 'Your latest CV is ready for this event workflow.';
+  } else {
+    cvGuidance.textContent = 'Your CV is ready. Register for an open event to generate a QR code.';
+  }
 }
 
 function renderParticipation(participation) {
   if (!participation) {
-    participationDetails.className = 'empty-state';
-    participationDetails.textContent = 'No active registration.';
+    participationDetails.className = 'empty-state hidden';
+    participationDetails.textContent = '';
     return;
   }
 
@@ -72,19 +85,24 @@ function renderParticipation(participation) {
   }).join(' - ');
 
   const status = document.createElement('p');
+  status.className = 'list-meta';
   status.textContent = participation.cv
     ? 'CV selected for this participation.'
-    : 'Upload a CV to activate the QR code.';
+    : latestCvPath
+      ? 'Activate your QR code to link this CV to the event.'
+      : 'Upload a CV to activate the QR code.';
 
   participationDetails.append(title, meta, status);
 }
 
 function renderQr(participation, qr) {
   const qrImage = document.querySelector('#qrImage');
+  const canShowQrPanel = Boolean(participation && (qr || latestCvPath || participation.cv));
 
-  qrPanel.classList.toggle('hidden', !participation);
+  qrPanel.classList.toggle('hidden', !canShowQrPanel);
+  registrationPanel.classList.toggle('hidden', Boolean(participation));
 
-  if (!participation) {
+  if (!canShowQrPanel) {
     qrImage.src = '';
     qrImage.classList.add('hidden');
     document.querySelector('#qrUrl').textContent = '-';
@@ -103,10 +121,6 @@ function renderOpenEvents(events, participation) {
   openEventsList.innerHTML = '';
 
   if (participation) {
-    const state = document.createElement('div');
-    state.className = 'empty-state';
-    state.textContent = 'You already have an active event registration.';
-    openEventsList.appendChild(state);
     return;
   }
 
@@ -143,6 +157,7 @@ function renderOpenEvents(events, participation) {
     button.className = 'button';
     button.textContent = 'Register';
     button.dataset.eventId = event.id;
+    button.dataset.eventName = event.name;
 
     actionRow.appendChild(button);
     card.append(title, meta, actionRow);
@@ -160,12 +175,14 @@ async function loadDashboard(options) {
   try {
     const cv = await requestOptional('/cv/me');
     const participation = await requestOptional('/participations/me');
-    const events = await CVQR.request('/events/open', {
-      headers: CVQR.authHeaders()
-    });
+    const events = participation
+      ? []
+      : await CVQR.request('/events/open', {
+        headers: CVQR.authHeaders()
+      });
     const qr = participation ? await requestOptional('/participations/me/qr') : null;
 
-    renderCv(cv);
+    renderCv(cv, participation);
     renderParticipation(participation);
     renderOpenEvents(events, participation);
     renderQr(participation, qr);
@@ -195,7 +212,18 @@ async function handleUploadSubmit(event) {
   }
 }
 
-async function registerForEvent(eventId) {
+async function registerForEvent(eventId, eventName) {
+  const confirmed = await CVQR.confirmAction({
+    title: 'Register for event?',
+    message: 'Register for "' + (eventName || 'this event') + '"? You can only have one active event registration.',
+    confirmLabel: 'Register',
+    variant: 'default'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
   try {
     const data = await CVQR.request('/participations', {
       method: 'POST',
@@ -241,13 +269,14 @@ if (CVQR.requireRole('student', '/login/')) {
   uploadForm.addEventListener('submit', handleUploadSubmit);
   logoutButtonHome.addEventListener('click', handleLogout);
   refreshButton.addEventListener('click', loadDashboard);
+  registrationRefreshButton.addEventListener('click', loadDashboard);
   generateQrButton.addEventListener('click', handleGenerateQr);
   openCurrentCvButton.addEventListener('click', openCurrentCv);
   openEventsList.addEventListener('click', function (event) {
     const button = event.target.closest('button[data-event-id]');
 
     if (button) {
-      registerForEvent(button.dataset.eventId);
+      registerForEvent(button.dataset.eventId, button.dataset.eventName);
     }
   });
 }

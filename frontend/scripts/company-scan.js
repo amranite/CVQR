@@ -8,6 +8,8 @@ const imageInput = document.querySelector('#imageInput');
 const tokenInput = document.querySelector('#token');
 const scannerPanel = document.querySelector('#scannerPanel');
 const tokenPanel = document.querySelector('#tokenPanel');
+const accessNotice = document.querySelector('#accessNotice');
+const assignmentSection = document.querySelector('#assignmentSection');
 const assignmentSummary = document.querySelector('#assignmentSummary');
 const companyEventsList = document.querySelector('#companyEventsList');
 
@@ -23,7 +25,7 @@ function handleCompanyLogout() {
 
 async function openByToken(rawValue) {
   if (!hasActiveEventAssignment) {
-    CVQR.showMessage(companyScanMessage, 'Please wait until an administrator assigns you to an active event.', 'error');
+    CVQR.showMessage(companyScanMessage, "Please wait until you're assigned to an active event.", 'error');
     return;
   }
 
@@ -68,7 +70,7 @@ async function startCamera() {
   CVQR.showMessage(companyScanMessage, '', 'error');
 
   if (!hasActiveEventAssignment) {
-    CVQR.showMessage(companyScanMessage, 'Please wait until an administrator assigns you to an active event.', 'error');
+    CVQR.showMessage(companyScanMessage, "Please wait until you're assigned to an active event.", 'error');
     return;
   }
 
@@ -143,7 +145,7 @@ async function readSelectedImage(file) {
   CVQR.showMessage(companyScanMessage, '', 'error');
 
   if (!hasActiveEventAssignment) {
-    CVQR.showMessage(companyScanMessage, 'Please wait until an administrator assigns you to an active event.', 'error');
+    CVQR.showMessage(companyScanMessage, "Please wait until you're assigned to an active event.", 'error');
     imageInput.value = '';
     return;
   }
@@ -181,6 +183,7 @@ function setScannerAvailability(isAvailable) {
   hasActiveEventAssignment = isAvailable;
   scannerPanel.classList.toggle('hidden', !isAvailable);
   tokenPanel.classList.toggle('hidden', !isAvailable);
+  accessNotice.classList.toggle('hidden', isAvailable);
   startCameraButton.disabled = !isAvailable;
   stopCameraButton.disabled = !isAvailable;
   pickImageButton.disabled = !isAvailable;
@@ -189,15 +192,6 @@ function setScannerAvailability(isAvailable) {
   if (!isAvailable) {
     stopCamera();
   }
-}
-
-function renderEmptyAssignment(message) {
-  companyEventsList.innerHTML = '';
-
-  const state = document.createElement('div');
-  state.className = 'empty-state';
-  state.textContent = message;
-  companyEventsList.appendChild(state);
 }
 
 function appendMeta(container, text) {
@@ -213,24 +207,26 @@ function appendMeta(container, text) {
 
 function renderCompanyEvent(event) {
   const card = document.createElement('article');
-  card.className = 'list-card';
+  card.className = 'list-card compact-row';
 
+  const content = document.createElement('div');
   const title = document.createElement('h3');
   title.textContent = event.name || 'Assigned event';
+  content.appendChild(title);
 
-  card.appendChild(title);
-  appendMeta(card, event.location);
-  appendMeta(card, 'Event: ' + CVQR.formatDateTime(event.starts_at) + ' - ' + CVQR.formatDateTime(event.ends_at));
-  appendMeta(card, 'Status: ' + (event.status || 'draft'));
+  appendMeta(content, event.location);
+  appendMeta(content, 'Event: ' + CVQR.formatDateTime(event.starts_at) + ' - ' + CVQR.formatDateTime(event.ends_at));
+  appendMeta(content, 'Status: ' + (event.status || 'draft'));
 
   if (event.is_active) {
-    appendMeta(card, 'Scanner available now.');
+    appendMeta(content, 'Scanner available now.');
   } else if (event.is_future) {
-    appendMeta(card, 'Assigned for a future event.');
+    appendMeta(content, 'Assigned for a future event.');
   } else {
-    appendMeta(card, 'Assigned, but not currently scannable.');
+    appendMeta(content, 'Assigned, but not currently scannable.');
   }
 
+  card.appendChild(content);
   return card;
 }
 
@@ -242,14 +238,22 @@ function renderCompanyEvents(events) {
   setScannerAvailability(activeEvents.length > 0);
 
   if (!events.length) {
-    assignmentSummary.textContent = 'No assigned events.';
-    renderEmptyAssignment('Welcome. Please wait until an administrator assigns you to an event.');
+    assignmentSection.classList.add('hidden');
+    companyEventsList.innerHTML = '';
+    accessNotice.innerHTML = "<div class=\"empty-state\">Welcome. Please wait until you're assigned to an event.</div>";
     return;
   }
 
+  assignmentSection.classList.remove('hidden');
   assignmentSummary.textContent = activeEvents.length > 0
     ? 'Scanner access is available for ' + activeEvents.length + ' active event' + (activeEvents.length === 1 ? '.' : 's.')
     : 'You have assigned events, but none are currently scannable.';
+
+  if (activeEvents.length > 0) {
+    accessNotice.innerHTML = '';
+  } else {
+    accessNotice.innerHTML = '<div class="empty-state">You are assigned to an event, but scanner access opens when the event is live.</div>';
+  }
 
   companyEventsList.innerHTML = '';
   events.forEach(function (event) {
@@ -266,8 +270,9 @@ async function loadCompanyEvents() {
     renderCompanyEvents(events);
   } catch (error) {
     setScannerAvailability(false);
-    assignmentSummary.textContent = 'Event assignment could not be loaded.';
-    renderEmptyAssignment(error.message);
+    assignmentSection.classList.add('hidden');
+    accessNotice.classList.remove('hidden');
+    accessNotice.innerHTML = '<div class="empty-state">Event assignment could not be loaded.</div>';
   }
 }
 

@@ -122,11 +122,26 @@ async function run() {
         });
         assertStatus(openEventRes, 200, "open event");
 
-        const assignCompanyRes = await call(adminController.assignCompanyToEvent, {
+        const assignCompanyRes = await call(adminController.updateEventCompanies, {
             user: { id: ids.adminId, role: "admin" },
-            params: { eventId, companyId: ids.companyId }
+            params: { eventId },
+            body: { company_ids: [ids.companyId] }
         });
         assertStatus(assignCompanyRes, 200, "assign company");
+        assert(
+            assignCompanyRes.body.event.assigned_companies.some((company) => company.id === ids.companyId),
+            "bulk company assignment should include company account"
+        );
+
+        const eventDetailsRes = await call(adminController.getEventDetails, {
+            user: { id: ids.adminId, role: "admin" },
+            params: { eventId }
+        });
+        assertStatus(eventDetailsRes, 200, "event details");
+        assert(
+            eventDetailsRes.body.assigned_companies.some((company) => company.id === ids.companyId),
+            "event details should include assigned company"
+        );
 
         const companyUsersRes = await call(adminController.getCompanyUsers, {
             user: { id: ids.adminId, role: "admin" }
@@ -229,6 +244,19 @@ async function run() {
         });
         assertStatus(companyFileRes, 200, "company secure file access");
         assert(companyFileRes.sentFile?.endsWith(`smoke-${suffix}-v4.pdf`), "secure file should resolve latest version");
+
+        const registrationsRes = await call(adminController.getRegistrationsOverview, {
+            user: { id: ids.adminId, role: "admin" }
+        });
+        assertStatus(registrationsRes, 200, "registrations overview");
+        assert(
+            registrationsRes.body.student_participations.some((participation) => participation.id === scanRes.body.participation_id),
+            "registrations overview should include student participation"
+        );
+        assert(
+            registrationsRes.body.company_assignments.some((assignment) => assignment.company_id === ids.companyId),
+            "registrations overview should include company assignment"
+        );
 
         const deleteOpenCvRes = await call(cvController.deleteCV, {
             user: { id: ids.studentId, role: "student" }

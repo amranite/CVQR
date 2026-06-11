@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const pool = require("../config/db");
 
 const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+const apiBaseUrl = `${baseUrl}/api`;
 const suffix = Date.now();
 const password = "IntegrationPass123!";
 const adminEmail = `integration-admin-${suffix}@example.com`;
@@ -30,7 +31,7 @@ function mysqlDate(offsetMs) {
 }
 
 async function request(pathname, options = {}) {
-    const response = await fetch(baseUrl + pathname, options);
+    const response = await fetch(apiBaseUrl + pathname, options);
     const contentType = response.headers.get("content-type") || "";
     const data = contentType.includes("application/json")
         ? await response.json()
@@ -44,6 +45,15 @@ async function request(pathname, options = {}) {
     }
 
     return { response, data };
+}
+
+async function requestPage(pathname) {
+    const response = await fetch(baseUrl + pathname);
+
+    if (!response.ok)
+        throw new Error(`GET ${pathname} failed: ${response.status} ${response.statusText}`);
+
+    return response;
 }
 
 function authHeaders(token, extra = {}) {
@@ -142,11 +152,16 @@ async function assertStaticPagesLoad() {
         "/company/",
         "/company/cv/",
         "/company/history/",
-        "/admin/"
+        "/admin/",
+        "/admin/events/",
+        "/admin/events/detail/",
+        "/admin/companies/",
+        "/admin/cvs/",
+        "/admin/registrations/"
     ];
 
     for (const page of pages) {
-        const { response } = await request(page);
+        const response = await requestPage(page);
         assert(response.status === 200, `${page} did not return 200`);
     }
 }
@@ -218,10 +233,15 @@ async function run() {
         headers: authHeaders(adminToken)
     });
 
-    await request(`/admin/events/${eventId}/companies/${companyId}`, {
-        method: "POST",
-        headers: authHeaders(adminToken)
+    const { data: bulkAssignmentData } = await request(`/admin/events/${eventId}/companies`, {
+        method: "PUT",
+        headers: authHeaders(adminToken, { "Content-Type": "application/json" }),
+        body: JSON.stringify({ company_ids: [companyId] })
     });
+    assert(
+        bulkAssignmentData.event.assigned_companies.some((company) => company.id === companyId),
+        "Bulk company assignment did not include integration company"
+    );
 
     const { data: assignedEvents } = await request("/company/events", {
         headers: authHeaders(companyToken)
@@ -262,7 +282,7 @@ async function run() {
     );
     assert(scanData.event.id === eventId, "Scan returned wrong event");
 
-    const cvFileResponse = await fetch(baseUrl + scanData.cv, {
+    const cvFileResponse = await fetch(apiBaseUrl + scanData.cv, {
         headers: authHeaders(companyToken)
     });
     assert(cvFileResponse.ok, "Company could not fetch scanned CV file");
@@ -312,12 +332,24 @@ async function run() {
         "Closed event remained visible in company assigned events"
     );
 
-    const closedScanResponse = await fetch(baseUrl + `/qr/${qrData.token}`, {
+    const { data: registrationsOverview } = await request("/admin/registrations", {
+        headers: authHeaders(adminToken)
+    });
+    assert(
+        registrationsOverview.student_participations.some((item) => item.id === scanData.participation_id),
+        "Admin registrations overview missing student participation"
+    );
+    assert(
+        registrationsOverview.company_assignments.some((item) => item.company_id === companyId),
+        "Admin registrations overview missing company assignment"
+    );
+
+    const closedScanResponse = await fetch(apiBaseUrl + `/qr/${qrData.token}`, {
         headers: authHeaders(companyToken)
     });
     assert(closedScanResponse.status === 403, "Closed event QR scan was not blocked");
 
-    const closedFileResponse = await fetch(baseUrl + scanData.cv, {
+    const closedFileResponse = await fetch(apiBaseUrl + scanData.cv, {
         headers: authHeaders(companyToken)
     });
     assert(closedFileResponse.status === 403, "Closed event CV file access was not blocked");
