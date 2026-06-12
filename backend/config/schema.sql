@@ -12,16 +12,16 @@ DROP TABLE IF EXISTS event_companies;
 DROP TABLE IF EXISTS cv_versions;
 DROP TABLE IF EXISTS cvs;
 DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS student_email_domains;
 DROP TABLE IF EXISTS users;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ------------------------------------------------------------------
 -- users
 -- Stores students, company representatives, and admins.
--- Role is assigned on registration:
---   - email ending in @school.com -> student
---   - anything else              -> company
---   - admin accounts are inserted manually
+-- Self-registration assigns student roles from student_email_domains.
+-- Non-matching email domains register as company accounts.
+-- Admin accounts are inserted manually.
 -- ------------------------------------------------------------------
 CREATE TABLE users (
     id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -34,6 +34,23 @@ CREATE TABLE users (
     UNIQUE KEY uq_users_email (email),
     KEY idx_users_role (role)
 );
+
+-- ------------------------------------------------------------------
+-- student_email_domains
+-- Exact email domains that register as student accounts.
+-- Store domains without a leading @, for example: student.school.edu.
+-- ------------------------------------------------------------------
+CREATE TABLE student_email_domains (
+    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    domain     VARCHAR(255) NOT NULL,
+    is_active  TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_student_email_domains_domain (domain),
+    KEY idx_student_email_domains_active (is_active)
+);
+
+INSERT INTO student_email_domains (domain) VALUES ('school.com');
 
 -- ------------------------------------------------------------------
 -- events

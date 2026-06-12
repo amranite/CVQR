@@ -4,6 +4,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const pool = require("../config/db");
+const { configuredStudentDomains } = require("../utils/emailDomains");
 const { uploadDir } = require("../utils/cvFiles");
 
 const DEMO_PASSWORD = "DemoPassword123!";
@@ -132,6 +133,18 @@ async function removeExistingDemoData() {
     );
 
     await deleteFiles(fileRows.map((row) => row.file_path).filter(Boolean));
+}
+
+async function ensureStudentEmailDomains() {
+    for (const domain of configuredStudentDomains()) {
+        await pool.query(
+            `INSERT INTO student_email_domains (domain, is_active)
+             VALUES (?, 1)
+             ON DUPLICATE KEY UPDATE
+                domain = VALUES(domain)`,
+            [domain]
+        );
+    }
 }
 
 async function insertUsers() {
@@ -284,6 +297,7 @@ async function createQrToken(participationId, token) {
 
 async function seedDemo() {
     await removeExistingDemoData();
+    await ensureStudentEmailDomains();
 
     const users = await insertUsers();
     const events = await insertEvents(users.admin.id);

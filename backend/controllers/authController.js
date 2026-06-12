@@ -1,29 +1,30 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { isStudentEmail, normalizeEmail } = require("../utils/emailDomains");
 
 // JWT secret loaded from environment, used to sign and verify tokens
 const SECRET = process.env.JWT_SECRET;
 
 // POST /auth/register
-// Creates a new user account. Role is derived from the email domain:
-// @school.com addresses are registered as students, everything else as companies.
+// Creates a new user account. Role is derived from the student email domain allowlist.
 exports.register = async (req, res) => {
 
     const { name, email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Reject missing or blank fields before hitting the database
-    if (!name?.trim() || !email?.trim() || !password)
+    if (!name?.trim() || !normalizedEmail || !password)
         return res.status(400).json({ error: "name, email, and password are required" });
 
     // Basic email format check — catches typos before they reach the DB
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail))
         return res.status(400).json({ error: "Invalid email format" });
 
     try {
 
-        // Determine role based on email domain
-        const role = email.endsWith("@school.com")
+        // Determine role through exact domain allowlist matching.
+        const role = await isStudentEmail(normalizedEmail)
             ? "student"
             : "company";
 
@@ -33,7 +34,7 @@ exports.register = async (req, res) => {
         // Insert the new user into the database
         await pool.query(
             "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
-            [name, email, password_hash, role]
+            [name.trim(), normalizedEmail, password_hash, role]
         );
 
         res.json({ message: "User registered" });
@@ -55,9 +56,10 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
 
     const { email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Reject missing fields before querying the database
-    if (!email?.trim() || !password)
+    if (!normalizedEmail || !password)
         return res.status(400).json({ error: "email and password are required" });
 
     try {
@@ -65,7 +67,7 @@ exports.login = async (req, res) => {
         // Look up the user by email
         const [rows] = await pool.query(
             "SELECT * FROM users WHERE email = ?",
-            [email]
+            [normalizedEmail]
         );
 
         if (rows.length === 0)

@@ -196,7 +196,7 @@ async function run() {
     await rememberRegisteredUsers();
 
     const adminToken = await login(adminEmail);
-    const studentToken = await login(studentEmail);
+    const studentToken = await login(studentEmail.toUpperCase());
     const companyToken = await login(companyEmail);
 
     await assertStaticPagesLoad();
