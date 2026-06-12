@@ -870,6 +870,15 @@ exports.getEventScans = async (req, res) => {
             `SELECT
                 scan_logs.id,
                 scan_logs.scanned_at,
+                scan_logs.student_revoked_at,
+                scan_logs.student_restored_at,
+                (
+                    scan_logs.student_revoked_at IS NOT NULL
+                    AND (
+                        scan_logs.student_restored_at IS NULL
+                        OR scan_logs.student_restored_at < scan_logs.student_revoked_at
+                    )
+                ) AS is_revoked,
                 companies.id AS company_id,
                 companies.name AS company_name,
                 companies.email AS company_email,

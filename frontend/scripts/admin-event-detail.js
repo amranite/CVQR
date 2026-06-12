@@ -122,6 +122,14 @@ function buildScanCard(item) {
   CVQRAdmin.appendMeta(card, item.student_email);
   CVQRAdmin.appendMeta(card, 'Company: ' + [item.company_name, item.company_email].filter(Boolean).join(' - '));
   CVQRAdmin.appendMeta(card, 'Scanned at ' + CVQR.formatDateTime(item.scanned_at));
+  if (item.student_revoked_at) {
+    CVQRAdmin.appendMeta(card, item.is_revoked
+      ? 'Student revoked access at ' + CVQR.formatDateTime(item.student_revoked_at)
+      : 'Student last revoked access at ' + CVQR.formatDateTime(item.student_revoked_at));
+  }
+  if (item.student_restored_at) {
+    CVQRAdmin.appendMeta(card, 'Access restored at ' + CVQR.formatDateTime(item.student_restored_at));
+  }
   CVQRAdmin.appendMeta(card, item.scanned_qr_token ? 'QR token: ' + item.scanned_qr_token : '');
   return card;
 }

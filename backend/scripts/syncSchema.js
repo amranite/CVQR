@@ -29,6 +29,12 @@ async function syncSchema() {
     if (await addColumnIfMissing("scan_logs", "favorited_at", "DATETIME DEFAULT NULL"))
         changes.push("scan_logs.favorited_at");
 
+    if (await addColumnIfMissing("scan_logs", "student_revoked_at", "DATETIME DEFAULT NULL"))
+        changes.push("scan_logs.student_revoked_at");
+
+    if (await addColumnIfMissing("scan_logs", "student_restored_at", "DATETIME DEFAULT NULL"))
+        changes.push("scan_logs.student_restored_at");
+
     if (changes.length === 0) {
         console.log("Schema is already up to date.");
         return;

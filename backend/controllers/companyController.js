@@ -20,6 +20,13 @@ async function getAccessibleScan(scanId, companyId) {
          AND events.starts_at <= NOW()
          AND events.ends_at >= NOW()
          AND events.closed_at IS NULL
+         AND NOT (
+            scan_logs.student_revoked_at IS NOT NULL
+            AND (
+                scan_logs.student_restored_at IS NULL
+                OR scan_logs.student_restored_at < scan_logs.student_revoked_at
+            )
+         )
          LIMIT 1`,
         [scanId, companyId]
     );
@@ -130,6 +137,13 @@ exports.getScans = async (req, res) => {
              AND events.starts_at <= NOW()
              AND events.ends_at >= NOW()
              AND events.closed_at IS NULL
+             AND NOT (
+                scan_logs.student_revoked_at IS NOT NULL
+                AND (
+                    scan_logs.student_restored_at IS NULL
+                    OR scan_logs.student_restored_at < scan_logs.student_revoked_at
+                )
+             )
              ${favoritesOnly ? "AND scan_logs.favorited_at IS NOT NULL" : ""}
              ORDER BY scan_logs.scanned_at DESC`,
             [companyId]

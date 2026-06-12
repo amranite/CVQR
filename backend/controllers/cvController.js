@@ -66,7 +66,15 @@ async function getParticipationForFileAccess(participationId) {
 
 async function assertCompanyScannedParticipation(companyId, participationId) {
     const [rows] = await pool.query(
-        `SELECT id
+        `SELECT
+            id,
+            (
+                student_revoked_at IS NOT NULL
+                AND (
+                    student_restored_at IS NULL
+                    OR student_restored_at < student_revoked_at
+                )
+            ) AS is_revoked
          FROM scan_logs
          WHERE company_id = ?
          AND participation_id = ?
@@ -76,6 +84,9 @@ async function assertCompanyScannedParticipation(companyId, participationId) {
 
     if (rows.length === 0)
         throw new HttpError(403, "Company has not scanned this participation", "SCAN_REQUIRED");
+
+    if (rows[0].is_revoked)
+        throw new HttpError(403, "Student revoked access to this CV", "SCAN_REVOKED");
 }
 
 async function assertCanAccessCvVersion(user, cvVersion) {

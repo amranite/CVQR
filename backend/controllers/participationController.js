@@ -12,7 +12,8 @@ const {
     buildQrUrl,
     buildQrPayload,
     getActiveQrTokenForParticipation,
-    getOrCreateActiveQrTokenForParticipation
+    getOrCreateActiveQrTokenForParticipation,
+    rotateQrTokenForParticipation
 } = require("../utils/qrTokens");
 const { HttpError, isHttpError } = require("../utils/httpError");
 
@@ -135,6 +136,26 @@ async function mapParticipationResponse(row, includeQrImage = false) {
     };
 }
 
+function mapStudentScanRow(row) {
+    return {
+        id: row.id,
+        scanned_at: row.scanned_at,
+        student_revoked_at: row.student_revoked_at,
+        student_restored_at: row.student_restored_at,
+        is_revoked: Boolean(row.is_revoked),
+        company: {
+            id: row.company_id,
+            name: row.company_name,
+            email: row.company_email
+        },
+        event: {
+            id: row.event_id,
+            name: row.event_name,
+            location: row.event_location
+        }
+    };
+}
+
 async function selectStudentCvForParticipation(studentId, participationId, db = pool) {
     const cv = await getStudentCv(studentId, db);
 
@@ -244,6 +265,146 @@ exports.getMyParticipationQr = async (req, res) => {
 
     } catch (err) {
         handleControllerError(res, err);
+    }
+};
+
+// GET /participations/me/scans
+// Lists company scan records for the student's current open participation.
+exports.getMyParticipationScans = async (req, res) => {
+    try {
+        const participation = await getOpenParticipationForStudent(req.user.id);
+
+        if (!participation)
+            return res.status(404).json({ error: "No open participation found" });
+
+        const [rows] = await pool.query(
+            `SELECT
+                scan_logs.id,
+                scan_logs.scanned_at,
+                scan_logs.student_revoked_at,
+                scan_logs.student_restored_at,
+                (
+                    scan_logs.student_revoked_at IS NOT NULL
+                    AND (
+                        scan_logs.student_restored_at IS NULL
+                        OR scan_logs.student_restored_at < scan_logs.student_revoked_at
+                    )
+                ) AS is_revoked,
+                companies.id AS company_id,
+                companies.name AS company_name,
+                companies.email AS company_email,
+                events.id AS event_id,
+                events.name AS event_name,
+                events.location AS event_location
+             FROM scan_logs
+             JOIN users companies ON companies.id = scan_logs.company_id
+             JOIN events ON events.id = scan_logs.event_id
+             WHERE scan_logs.participation_id = ?
+             ORDER BY scan_logs.scanned_at DESC`,
+            [participation.id]
+        );
+
+        res.json(rows.map(mapStudentScanRow));
+
+    } catch (err) {
+        handleControllerError(res, err);
+    }
+};
+
+// POST /participations/me/scans/:scanId/revoke
+// Revokes one company's access and rotates the participation QR token.
+exports.revokeCompanyScanAccess = async (req, res) => {
+    const connection = await pool.getConnection();
+
+    try {
+        const studentId = req.user.id;
+        const { scanId } = req.params;
+
+        await connection.beginTransaction();
+
+        const [rows] = await connection.query(
+            `SELECT
+                scan_logs.id,
+                scan_logs.participation_id,
+                scan_logs.event_id,
+                scan_logs.scanned_at,
+                scan_logs.student_revoked_at,
+                scan_logs.student_restored_at,
+                (
+                    scan_logs.student_revoked_at IS NOT NULL
+                    AND (
+                        scan_logs.student_restored_at IS NULL
+                        OR scan_logs.student_restored_at < scan_logs.student_revoked_at
+                    )
+                ) AS is_revoked,
+                companies.id AS company_id,
+                companies.name AS company_name,
+                companies.email AS company_email,
+                events.name AS event_name,
+                events.location AS event_location
+             FROM scan_logs
+             JOIN participations ON participations.id = scan_logs.participation_id
+             JOIN users companies ON companies.id = scan_logs.company_id
+             JOIN events ON events.id = scan_logs.event_id
+             WHERE scan_logs.id = ?
+             AND participations.student_id = ?
+             AND events.status = 'open'
+             AND events.closed_at IS NULL
+             LIMIT 1`,
+            [scanId, studentId]
+        );
+
+        if (rows.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ error: "Scan not found" });
+        }
+
+        const scan = rows[0];
+        let qrToken = await getActiveQrTokenForParticipation(scan.participation_id, connection);
+
+        if (!scan.is_revoked) {
+            await connection.query(
+                `UPDATE scan_logs
+                 SET student_revoked_at = NOW(),
+                     student_restored_at = NULL
+                 WHERE id = ?`,
+                [scan.id]
+            );
+
+            qrToken = await rotateQrTokenForParticipation(
+                scan.participation_id,
+                "student_revoked_company_access",
+                connection
+            );
+        }
+
+        await connection.commit();
+
+        res.json({
+            message: scan.is_revoked ? "Company access was already revoked" : "Company access revoked",
+            scan: {
+                ...mapStudentScanRow({
+                    ...scan,
+                    student_revoked_at: scan.is_revoked ? scan.student_revoked_at : new Date(),
+                    student_restored_at: null,
+                    is_revoked: true
+                })
+            },
+            qr: qrToken
+                ? {
+                    participation_id: scan.participation_id,
+                    token: qrToken.token,
+                    created_at: qrToken.created_at,
+                    ...(await buildQrPayload(qrToken.token))
+                }
+                : null
+        });
+
+    } catch (err) {
+        await connection.rollback();
+        handleControllerError(res, err);
+    } finally {
+        connection.release();
     }
 };
 

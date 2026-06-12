@@ -8,6 +8,10 @@ const openEventsList = document.querySelector('#openEventsList');
 const participationDetails = document.querySelector('#participationDetails');
 const qrPanel = document.querySelector('#qrPanel');
 const registrationPanel = document.querySelector('#registrationPanel');
+const companyAccessPanel = document.querySelector('#companyAccessPanel');
+const companyAccessCount = document.querySelector('#companyAccessCount');
+const companyAccessList = document.querySelector('#companyAccessList');
+const refreshCompanyAccessButton = document.querySelector('#refreshCompanyAccessButton');
 const generateQrButton = document.querySelector('#generateQrButton');
 const cvGuidance = document.querySelector('#cvGuidance');
 
@@ -165,6 +169,87 @@ function renderOpenEvents(events, participation) {
   });
 }
 
+function setCompanyAccessCount(count) {
+  companyAccessCount.textContent = count + ' result' + (count === 1 ? '' : 's');
+}
+
+function buildCompanyAccessCard(scan) {
+  const card = document.createElement('article');
+  card.className = 'list-card compact-row';
+
+  const content = document.createElement('div');
+  const title = document.createElement('h3');
+  title.textContent = scan.company && scan.company.name ? scan.company.name : 'Unknown company';
+  content.appendChild(title);
+
+  const email = scan.company && scan.company.email ? scan.company.email : '';
+  const status = scan.is_revoked ? 'Access revoked' : 'Access active';
+
+  if (email) {
+    const emailMeta = document.createElement('p');
+    emailMeta.className = 'list-meta';
+    emailMeta.textContent = email;
+    content.appendChild(emailMeta);
+  }
+
+  const scannedAt = document.createElement('p');
+  scannedAt.className = 'list-meta';
+  scannedAt.textContent = 'Scanned at ' + CVQR.formatDateTime(scan.scanned_at);
+  content.appendChild(scannedAt);
+
+  const statusMeta = document.createElement('p');
+  statusMeta.className = 'list-meta';
+  statusMeta.textContent = status;
+  content.appendChild(statusMeta);
+
+  if (scan.student_revoked_at) {
+    const revokedAt = document.createElement('p');
+    revokedAt.className = 'list-meta';
+    revokedAt.textContent = 'Revoked at ' + CVQR.formatDateTime(scan.student_revoked_at);
+    content.appendChild(revokedAt);
+  }
+
+  const actionRow = document.createElement('div');
+  actionRow.className = 'button-row compact-actions';
+
+  const revokeButton = document.createElement('button');
+  revokeButton.type = 'button';
+  revokeButton.className = scan.is_revoked ? 'button button-secondary' : 'button button-danger';
+  revokeButton.textContent = scan.is_revoked ? 'Revoked' : 'Revoke access';
+  revokeButton.disabled = Boolean(scan.is_revoked);
+  revokeButton.dataset.scanId = scan.id;
+  revokeButton.dataset.companyName = title.textContent;
+
+  actionRow.appendChild(revokeButton);
+  card.append(content, actionRow);
+  return card;
+}
+
+function renderCompanyAccess(scans, participation) {
+  const canShow = Boolean(participation);
+  companyAccessPanel.classList.toggle('hidden', !canShow);
+  companyAccessList.innerHTML = '';
+
+  if (!canShow) {
+    setCompanyAccessCount(0);
+    return;
+  }
+
+  setCompanyAccessCount(scans ? scans.length : 0);
+
+  if (!scans || scans.length === 0) {
+    const state = document.createElement('div');
+    state.className = 'empty-state';
+    state.textContent = 'No company has scanned your QR code yet.';
+    companyAccessList.appendChild(state);
+    return;
+  }
+
+  scans.forEach(function (scan) {
+    companyAccessList.appendChild(buildCompanyAccessCard(scan));
+  });
+}
+
 async function loadDashboard(options) {
   const settings = options || {};
 
@@ -181,11 +266,13 @@ async function loadDashboard(options) {
         headers: CVQR.authHeaders()
       });
     const qr = participation ? await requestOptional('/participations/me/qr') : null;
+    const scans = participation ? await requestOptional('/participations/me/scans') : [];
 
     renderCv(cv, participation);
     renderParticipation(participation);
     renderOpenEvents(events, participation);
     renderQr(participation, qr);
+    renderCompanyAccess(scans, participation);
   } catch (error) {
     CVQR.showMessage(studentHomeMessage, error.message, 'error');
   }
@@ -264,12 +351,38 @@ async function openCurrentCv() {
   }
 }
 
+async function revokeCompanyAccess(scanId, companyName) {
+  const confirmed = await CVQR.confirmAction({
+    title: 'Revoke company access?',
+    message: 'Revoke access for ' + (companyName || 'this company') + '? Your QR code will be refreshed, and the company can only regain access if you show the new QR code.',
+    confirmLabel: 'Revoke access',
+    variant: 'danger'
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const data = await CVQR.request('/participations/me/scans/' + encodeURIComponent(scanId) + '/revoke', {
+      method: 'POST',
+      headers: CVQR.authHeaders()
+    });
+
+    await loadDashboard({ preserveMessage: true });
+    CVQR.showMessage(studentHomeMessage, data.message || 'Company access revoked.', 'success');
+  } catch (error) {
+    CVQR.showMessage(studentHomeMessage, error.message, 'error');
+  }
+}
+
 if (CVQR.requireRole('student', '/login/')) {
   loadDashboard();
   uploadForm.addEventListener('submit', handleUploadSubmit);
   logoutButtonHome.addEventListener('click', handleLogout);
   refreshButton.addEventListener('click', loadDashboard);
   registrationRefreshButton.addEventListener('click', loadDashboard);
+  refreshCompanyAccessButton.addEventListener('click', loadDashboard);
   generateQrButton.addEventListener('click', handleGenerateQr);
   openCurrentCvButton.addEventListener('click', openCurrentCv);
   openEventsList.addEventListener('click', function (event) {
@@ -277,6 +390,13 @@ if (CVQR.requireRole('student', '/login/')) {
 
     if (button) {
       registerForEvent(button.dataset.eventId, button.dataset.eventName);
+    }
+  });
+  companyAccessList.addEventListener('click', function (event) {
+    const button = event.target.closest('button[data-scan-id]');
+
+    if (button && !button.disabled) {
+      revokeCompanyAccess(button.dataset.scanId, button.dataset.companyName);
     }
   });
 }

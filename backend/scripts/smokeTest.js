@@ -302,6 +302,59 @@ async function run() {
         assertStatus(companyFileRes, 200, "company secure file access");
         assert(companyFileRes.sentFile?.endsWith(`smoke-${suffix}-v4.pdf`), "secure file should resolve latest version");
 
+        const studentScansRes = await call(participationController.getMyParticipationScans, {
+            user: { id: ids.studentId, role: "student" }
+        });
+        assertStatus(studentScansRes, 200, "student company access list");
+        assert(
+            studentScansRes.body.some((scan) => scan.id === scanRes.body.scan_id && !scan.is_revoked),
+            "student company access list should include active scan"
+        );
+
+        const revokeScanRes = await call(participationController.revokeCompanyScanAccess, {
+            user: { id: ids.studentId, role: "student" },
+            params: { scanId: scanRes.body.scan_id }
+        });
+        assertStatus(revokeScanRes, 200, "student revoke company access");
+        assert(revokeScanRes.body.scan.is_revoked, "revoke should mark scan as revoked");
+        assert(revokeScanRes.body.qr?.token, "revoke should return refreshed QR token");
+        assert(revokeScanRes.body.qr.token !== qrRes.body.token, "revoke should rotate QR token");
+
+        const revokedHistoryRes = await call(companyController.getScans, {
+            user: { id: ids.companyId, role: "company" }
+        });
+        assertStatus(revokedHistoryRes, 200, "revoked company history");
+        assert(
+            !revokedHistoryRes.body.some((scan) => scan.id === scanRes.body.scan_id),
+            "company history should hide student-revoked scan"
+        );
+
+        const revokedFileRes = await call(cvController.sendParticipationCvFile, {
+            user: { id: ids.companyId, role: "company" },
+            params: { participationId: scanRes.body.participation_id }
+        });
+        assertStatus(revokedFileRes, 403, "revoked company secure file access");
+
+        const oldQrAfterRevokeRes = await call(qrController.scanQR, {
+            user: { id: ids.companyId, role: "company" },
+            params: { token: qrRes.body.token }
+        });
+        assertStatus(oldQrAfterRevokeRes, 404, "old QR after student revoke");
+
+        const restoredScanRes = await call(qrController.scanQR, {
+            user: { id: ids.companyId, role: "company" },
+            params: { token: revokeScanRes.body.qr.token }
+        });
+        assertStatus(restoredScanRes, 200, "restore scan with refreshed QR");
+        assert(restoredScanRes.body.scan_id === scanRes.body.scan_id, "restore scan should update existing scan row");
+        assert(!restoredScanRes.body.is_revoked, "fresh QR scan should restore company access");
+
+        const restoredFileRes = await call(cvController.sendParticipationCvFile, {
+            user: { id: ids.companyId, role: "company" },
+            params: { participationId: scanRes.body.participation_id }
+        });
+        assertStatus(restoredFileRes, 200, "restored company secure file access");
+
         const registrationsRes = await call(adminController.getRegistrationsOverview, {
             user: { id: ids.adminId, role: "admin" }
         });
@@ -346,7 +399,7 @@ async function run() {
 
         const closedScanRes = await call(qrController.scanQR, {
             user: { id: ids.companyId, role: "company" },
-            params: { token: qrRes.body.token }
+            params: { token: revokeScanRes.body.qr.token }
         });
         assertStatus(closedScanRes, 403, "closed event QR scan");
 

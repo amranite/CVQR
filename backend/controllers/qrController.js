@@ -68,7 +68,16 @@ async function logCompanyScan(companyId, qrToken, scanDetails) {
          ON DUPLICATE KEY UPDATE
             event_id = VALUES(event_id),
             qr_token_id = VALUES(qr_token_id),
-            scanned_at = NOW()`,
+            scanned_at = NOW(),
+            student_restored_at = CASE
+                WHEN student_revoked_at IS NOT NULL
+                    AND (
+                        student_restored_at IS NULL
+                        OR student_restored_at < student_revoked_at
+                    )
+                THEN NOW()
+                ELSE student_restored_at
+            END`,
         [
             companyId,
             scanDetails.event_id,
@@ -78,7 +87,19 @@ async function logCompanyScan(companyId, qrToken, scanDetails) {
     );
 
     const [rows] = await pool.query(
-        `SELECT id, scanned_at, favorited_at
+        `SELECT
+            id,
+            scanned_at,
+            favorited_at,
+            student_revoked_at,
+            student_restored_at,
+            (
+                student_revoked_at IS NOT NULL
+                AND (
+                    student_restored_at IS NULL
+                    OR student_restored_at < student_revoked_at
+                )
+            ) AS is_revoked
          FROM scan_logs
          WHERE company_id = ?
          AND participation_id = ?
@@ -137,6 +158,9 @@ exports.scanQR = async (req, res) => {
             scanned_at: scanLog ? scanLog.scanned_at : null,
             favorited_at: scanLog ? scanLog.favorited_at : null,
             is_favorite: Boolean(scanLog && scanLog.favorited_at),
+            student_revoked_at: scanLog ? scanLog.student_revoked_at : null,
+            student_restored_at: scanLog ? scanLog.student_restored_at : null,
+            is_revoked: Boolean(scanLog && scanLog.is_revoked),
             participation_id: scanDetails.participation_id,
             event: {
                 id: scanDetails.event_id,
