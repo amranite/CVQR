@@ -156,6 +156,7 @@ async function assertStaticPagesLoad() {
         "/admin/events/",
         "/admin/events/detail/",
         "/admin/companies/",
+        "/admin/users/",
         "/admin/cvs/",
         "/admin/registrations/"
     ];
@@ -211,6 +212,26 @@ async function run() {
     const companyUser = companyUsers.find((company) => company.email === companyEmail);
     assert(companyUser, "Admin company user list did not include integration company");
     const companyId = companyUser.id;
+
+    const { data: allUsers } = await request("/admin/users", {
+        headers: authHeaders(adminToken)
+    });
+    assert(
+        allUsers.some((user) => user.email === studentEmail && user.role === "student"),
+        "Admin users overview missing integration student"
+    );
+    assert(
+        allUsers.some((user) => user.email === companyEmail && user.role === "company"),
+        "Admin users overview missing integration company"
+    );
+
+    const { data: searchedUsers } = await request(`/admin/users?q=${encodeURIComponent("Integration Student " + suffix)}&role=student&activity=without_cv`, {
+        headers: authHeaders(adminToken)
+    });
+    assert(
+        searchedUsers.length === 1 && searchedUsers[0].email === studentEmail,
+        "Admin users search/filter did not return expected student"
+    );
 
     const { data: createEventData } = await request("/admin/events", {
         method: "POST",

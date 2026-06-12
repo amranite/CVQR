@@ -17,6 +17,16 @@ const EVENT_FIELDS = [
     "starts_at",
     "ends_at"
 ];
+const USER_ROLES = new Set(["admin", "student", "company"]);
+const USER_ACTIVITY_FILTERS = new Set([
+    "all",
+    "with_cv",
+    "without_cv",
+    "active_participation",
+    "without_participation",
+    "assigned_company",
+    "unassigned_company"
+]);
 
 function handleControllerError(res, err) {
     if (isHttpError(err))
@@ -64,6 +74,31 @@ function mapCvListRow(row) {
         original_name: row.original_name,
         uploaded_at: row.uploaded_at,
         cv: row.file_path ? `/cv/version/${row.latest_version_id}/file` : null
+    };
+}
+
+function normalizeQueryValue(value) {
+    return String(value || "").trim();
+}
+
+function mapUserListRow(row) {
+    return {
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        role: row.role,
+        created_at: row.created_at,
+        cv_count: Number(row.cv_count || 0),
+        latest_cv_version_id: row.latest_cv_version_id || null,
+        latest_cv_name: row.latest_cv_name || null,
+        latest_cv_uploaded_at: row.latest_cv_uploaded_at || null,
+        active_participations_count: Number(row.active_participations_count || 0),
+        participations_count: Number(row.participations_count || 0),
+        company_assignments_count: Number(row.company_assignments_count || 0),
+        active_company_assignments_count: Number(row.active_company_assignments_count || 0),
+        scan_count: Number(row.scan_count || 0),
+        latest_scan_at: row.latest_scan_at || null,
+        cv: row.latest_cv_version_id ? `/cv/version/${row.latest_cv_version_id}/file` : null
     };
 }
 
@@ -265,6 +300,141 @@ exports.getCompanyUsers = async (req, res) => {
         );
 
         res.json(rows);
+
+    } catch (err) {
+        handleControllerError(res, err);
+    }
+};
+
+// GET /admin/users
+// Returns all account users with useful admin overview metrics.
+exports.getUsers = async (req, res) => {
+    try {
+        const query = req.query || {};
+        const search = normalizeQueryValue(query.q);
+        const role = normalizeQueryValue(query.role).toLowerCase();
+        const activity = normalizeQueryValue(query.activity).toLowerCase() || "all";
+        const where = [];
+        const values = [];
+
+        if (role) {
+            if (!USER_ROLES.has(role))
+                return res.status(400).json({ error: "Invalid role filter" });
+
+            where.push("users.role = ?");
+            values.push(role);
+        }
+
+        if (!USER_ACTIVITY_FILTERS.has(activity))
+            return res.status(400).json({ error: "Invalid activity filter" });
+
+        if (search) {
+            where.push("(users.name LIKE ? OR users.email LIKE ?)");
+            values.push(`%${search}%`, `%${search}%`);
+        }
+
+        if (activity === "with_cv")
+            where.push("users.role = 'student' AND COALESCE(cv_metrics.cv_count, 0) > 0");
+
+        if (activity === "without_cv")
+            where.push("users.role = 'student' AND COALESCE(cv_metrics.cv_count, 0) = 0");
+
+        if (activity === "active_participation")
+            where.push("users.role = 'student' AND COALESCE(participation_metrics.active_participations_count, 0) > 0");
+
+        if (activity === "without_participation")
+            where.push("users.role = 'student' AND COALESCE(participation_metrics.participations_count, 0) = 0");
+
+        if (activity === "assigned_company")
+            where.push("users.role = 'company' AND COALESCE(company_metrics.company_assignments_count, 0) > 0");
+
+        if (activity === "unassigned_company")
+            where.push("users.role = 'company' AND COALESCE(company_metrics.company_assignments_count, 0) = 0");
+
+        const [rows] = await pool.query(
+            `SELECT
+                users.id,
+                users.name,
+                users.email,
+                users.role,
+                users.created_at,
+                COALESCE(cv_metrics.cv_count, 0) AS cv_count,
+                cv_metrics.latest_cv_version_id,
+                cv_metrics.latest_cv_name,
+                cv_metrics.latest_cv_uploaded_at,
+                COALESCE(participation_metrics.active_participations_count, 0) AS active_participations_count,
+                COALESCE(participation_metrics.participations_count, 0) AS participations_count,
+                COALESCE(company_metrics.company_assignments_count, 0) AS company_assignments_count,
+                COALESCE(company_metrics.active_company_assignments_count, 0) AS active_company_assignments_count,
+                COALESCE(scan_metrics.scan_count, 0) AS scan_count,
+                scan_metrics.latest_scan_at
+             FROM users
+             LEFT JOIN (
+                SELECT
+                    cvs.student_id,
+                    COUNT(DISTINCT cvs.id) AS cv_count,
+                    latest_versions.id AS latest_cv_version_id,
+                    latest_versions.original_name AS latest_cv_name,
+                    latest_versions.uploaded_at AS latest_cv_uploaded_at
+                FROM cvs
+                LEFT JOIN (
+                    SELECT cv_versions.*
+                    FROM cv_versions
+                    JOIN (
+                        SELECT cv_id, MAX(version_number) AS max_version
+                        FROM cv_versions
+                        GROUP BY cv_id
+                    ) latest ON latest.cv_id = cv_versions.cv_id
+                        AND latest.max_version = cv_versions.version_number
+                ) latest_versions ON latest_versions.cv_id = cvs.id
+                GROUP BY
+                    cvs.student_id,
+                    latest_versions.id,
+                    latest_versions.original_name,
+                    latest_versions.uploaded_at
+             ) cv_metrics ON cv_metrics.student_id = users.id
+             LEFT JOIN (
+                SELECT
+                    participations.student_id,
+                    COUNT(*) AS participations_count,
+                    SUM(CASE
+                        WHEN events.status = 'open'
+                            AND events.closed_at IS NULL
+                        THEN 1
+                        ELSE 0
+                    END) AS active_participations_count
+                FROM participations
+                JOIN events ON events.id = participations.event_id
+                GROUP BY participations.student_id
+             ) participation_metrics ON participation_metrics.student_id = users.id
+             LEFT JOIN (
+                SELECT
+                    event_companies.company_id,
+                    COUNT(*) AS company_assignments_count,
+                    SUM(CASE
+                        WHEN events.status = 'open'
+                            AND events.closed_at IS NULL
+                        THEN 1
+                        ELSE 0
+                    END) AS active_company_assignments_count
+                FROM event_companies
+                JOIN events ON events.id = event_companies.event_id
+                GROUP BY event_companies.company_id
+             ) company_metrics ON company_metrics.company_id = users.id
+             LEFT JOIN (
+                SELECT
+                    scan_logs.company_id,
+                    COUNT(*) AS scan_count,
+                    MAX(scan_logs.scanned_at) AS latest_scan_at
+                FROM scan_logs
+                GROUP BY scan_logs.company_id
+             ) scan_metrics ON scan_metrics.company_id = users.id
+             ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+             ORDER BY users.created_at DESC, users.name ASC, users.email ASC`,
+            values
+        );
+
+        res.json(rows.map(mapUserListRow));
 
     } catch (err) {
         handleControllerError(res, err);

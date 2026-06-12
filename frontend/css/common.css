@@ -444,6 +444,13 @@ select {
    gap: 0.25rem;
 }
 
+.inline-heading {
+   display: flex !important;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 0.5rem;
+}
+
 .empty-state {
    padding: 1.5rem;
    border: 1px dashed #bcccdc;
@@ -794,6 +801,37 @@ select {
    align-items: end;
 }
 
+.filter-form {
+   display: grid;
+   gap: 1rem;
+   align-items: end;
+}
+
+.filter-form label {
+   display: block;
+   margin-bottom: 0.35rem;
+   font-weight: bold;
+}
+
+.filter-form input,
+.filter-form select {
+   width: 100%;
+   padding: 0.75rem 0.9rem;
+   border: 1px solid #bcccdc;
+   border-radius: 0.5rem;
+   background-color: #ffffff;
+}
+
+.filter-form input:focus,
+.filter-form select:focus {
+   border-color: var(--color-primary);
+   outline: 2px solid rgba(15, 76, 129, 0.18);
+}
+
+.filter-actions {
+   align-items: end;
+}
+
 .detail-grid {
    display: grid;
    gap: 0;
@@ -893,6 +931,28 @@ select {
    color: #475569;
 }
 
+.role-pill {
+   text-transform: none;
+}
+
+.role-student {
+   border-color: var(--color-success-border);
+   background-color: var(--color-success-bg);
+   color: var(--color-success-text);
+}
+
+.role-company {
+   border-color: #bae6fd;
+   background-color: #f0f9ff;
+   color: #075985;
+}
+
+.role-admin {
+   border-color: #c7d2fe;
+   background-color: #eef2ff;
+   color: #3730a3;
+}
+
 .scanner-primary {
    border-color: #a9d8ce;
    box-shadow: 0 0.65rem 1.5rem rgba(60, 180, 151, 0.14);
@@ -935,6 +995,10 @@ select {
 
    .form-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+   }
+
+   .filter-form {
+      grid-template-columns: minmax(12rem, 1fr) minmax(10rem, 0.65fr) minmax(12rem, 0.8fr) auto;
    }
 
    .form-actions {

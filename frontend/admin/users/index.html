@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - Admin users</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+  <header class="site-header dashboard-header">
+    <div class="container header-inner">
+      <a class="brand" href="/admin/users/" data-refresh-current aria-label="Refresh users">
+        <i class="fa-solid fa-users"></i>
+        <div>
+          <h1>Users</h1>
+          <p>Search accounts and review participation status.</p>
+        </div>
+      </a>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="/admin/">Dashboard</a>
+        <a class="button button-secondary" href="/admin/events/">Events</a>
+        <a class="button button-secondary" href="/admin/companies/">Companies</a>
+        <a class="button button-secondary is-active" href="/admin/users/">Users</a>
+        <a class="button button-secondary" href="/admin/cvs/">CVs</a>
+        <a class="button button-secondary" href="/admin/registrations/">Registrations</a>
+        <button type="button" class="button logout-button" id="logoutButton">Log out</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main grid">
+    <div id="usersMessage" class="message hidden"></div>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Account overview</h2>
+          <p id="userCount" class="section-text">0 results</p>
+        </div>
+        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      </div>
+
+      <form id="userFilterForm" class="filter-form" role="search">
+        <div>
+          <label for="userSearch">Search</label>
+          <input type="search" id="userSearch" name="q" placeholder="Name or email">
+        </div>
+        <div>
+          <label for="roleFilter">Role</label>
+          <select id="roleFilter" name="role">
+            <option value="">All roles</option>
+            <option value="student">Students</option>
+            <option value="company">Companies</option>
+            <option value="admin">Admins</option>
+          </select>
+        </div>
+        <div>
+          <label for="activityFilter">Activity</label>
+          <select id="activityFilter" name="activity">
+            <option value="all">All activity</option>
+            <option value="with_cv">Students with CV</option>
+            <option value="without_cv">Students without CV</option>
+            <option value="active_participation">Students in open event</option>
+            <option value="without_participation">Students never registered</option>
+            <option value="assigned_company">Assigned companies</option>
+            <option value="unassigned_company">Unassigned companies</option>
+          </select>
+        </div>
+        <div class="button-row filter-actions">
+          <button type="submit" class="button"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+          <button type="button" class="button button-secondary" id="clearFiltersButton">Clear</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div id="usersList" class="card-list compact-card-list"></div>
+    </section>
+  </main>
+
+  <script src="/scripts/config.js"></script>
+  <script src="/scripts/utils.js"></script>
+  <script src="/scripts/admin-shared.js"></script>
+  <script src="/scripts/admin-users.js"></script>
+</body>
+</html>

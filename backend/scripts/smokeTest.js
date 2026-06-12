@@ -152,6 +152,38 @@ async function run() {
             "company user list should include company account"
         );
 
+        const allUsersRes = await call(adminController.getUsers, {
+            user: { id: ids.adminId, role: "admin" },
+            query: {}
+        });
+        assertStatus(allUsersRes, 200, "list all users");
+        assert(
+            allUsersRes.body.some((user) => user.id === ids.adminId && user.role === "admin"),
+            "admin user overview should include admin account"
+        );
+        assert(
+            allUsersRes.body.some((user) => user.id === ids.studentId && user.role === "student"),
+            "admin user overview should include student account"
+        );
+        assert(
+            allUsersRes.body.some((user) => user.id === ids.companyId && user.role === "company"),
+            "admin user overview should include company account"
+        );
+
+        const searchedUsersRes = await call(adminController.getUsers, {
+            user: { id: ids.adminId, role: "admin" },
+            query: {
+                q: `smoke-student-${suffix}`,
+                role: "student",
+                activity: "without_cv"
+            }
+        });
+        assertStatus(searchedUsersRes, 200, "search student users");
+        assert(
+            searchedUsersRes.body.length === 1 && searchedUsersRes.body[0].id === ids.studentId,
+            "admin user search/filter should find the matching student without a CV"
+        );
+
         const companyEventsRes = await call(companyController.getEvents, {
             user: { id: ids.companyId, role: "company" }
         });
