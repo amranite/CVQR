@@ -189,6 +189,7 @@ CREATE TABLE scan_logs (
     participation_id INT UNSIGNED NOT NULL,
     qr_token_id      INT UNSIGNED NOT NULL,
     scanned_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    favorited_at     DATETIME DEFAULT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_scan_logs_company_participation (company_id, participation_id),
     KEY idx_scan_logs_event_company (event_id, company_id),

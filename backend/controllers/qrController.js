@@ -76,6 +76,17 @@ async function logCompanyScan(companyId, qrToken, scanDetails) {
             qrToken.id
         ]
     );
+
+    const [rows] = await pool.query(
+        `SELECT id, scanned_at, favorited_at
+         FROM scan_logs
+         WHERE company_id = ?
+         AND participation_id = ?
+         LIMIT 1`,
+        [companyId, scanDetails.participation_id]
+    );
+
+    return rows[0] || null;
 }
 
 // GET /qr/me
@@ -118,10 +129,14 @@ exports.scanQR = async (req, res) => {
         if (!scanDetails)
             return res.status(404).json({ error: "Participation not found" });
 
-        await logCompanyScan(req.user.id, qrToken, scanDetails);
+        const scanLog = await logCompanyScan(req.user.id, qrToken, scanDetails);
 
         res.json({
             message: "QR valid",
+            scan_id: scanLog ? scanLog.id : null,
+            scanned_at: scanLog ? scanLog.scanned_at : null,
+            favorited_at: scanLog ? scanLog.favorited_at : null,
+            is_favorite: Boolean(scanLog && scanLog.favorited_at),
             participation_id: scanDetails.participation_id,
             event: {
                 id: scanDetails.event_id,

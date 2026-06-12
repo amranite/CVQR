@@ -1,5 +1,32 @@
 const pool = require("../config/db");
 
+function wantsFavoritesOnly(req) {
+    const value = String((req.query || {}).favorites || "").toLowerCase();
+    return value === "1" || value === "true" || value === "yes";
+}
+
+async function getAccessibleScan(scanId, companyId) {
+    const [rows] = await pool.query(
+        `SELECT
+            scan_logs.id,
+            scan_logs.favorited_at
+         FROM scan_logs
+         JOIN events ON events.id = scan_logs.event_id
+         JOIN event_companies ON event_companies.event_id = events.id
+            AND event_companies.company_id = scan_logs.company_id
+         WHERE scan_logs.id = ?
+         AND scan_logs.company_id = ?
+         AND events.status = 'open'
+         AND events.starts_at <= NOW()
+         AND events.ends_at >= NOW()
+         AND events.closed_at IS NULL
+         LIMIT 1`,
+        [scanId, companyId]
+    );
+
+    return rows[0] || null;
+}
+
 // GET /company/events
 // Returns the logged-in company user's assigned, non-closed events. The
 // frontend uses is_active to decide whether scanner controls should be shown.
@@ -63,11 +90,13 @@ exports.getEvents = async (req, res) => {
 exports.getScans = async (req, res) => {
     try {
         const companyId = req.user.id;
+        const favoritesOnly = wantsFavoritesOnly(req);
 
         const [rows] = await pool.query(
             `SELECT
                 scan_logs.id,
                 scan_logs.scanned_at,
+                scan_logs.favorited_at,
                 scan_logs.event_id,
                 events.name AS event_name,
                 events.location AS event_location,
@@ -101,6 +130,7 @@ exports.getScans = async (req, res) => {
              AND events.starts_at <= NOW()
              AND events.ends_at >= NOW()
              AND events.closed_at IS NULL
+             ${favoritesOnly ? "AND scan_logs.favorited_at IS NOT NULL" : ""}
              ORDER BY scan_logs.scanned_at DESC`,
             [companyId]
         );
@@ -108,6 +138,8 @@ exports.getScans = async (req, res) => {
         res.json(rows.map((row) => ({
             id: row.id,
             scanned_at: row.scanned_at,
+            favorited_at: row.favorited_at,
+            is_favorite: Boolean(row.favorited_at),
             event: {
                 id: row.event_id,
                 name: row.event_name,
@@ -130,6 +162,68 @@ exports.getScans = async (req, res) => {
             // Temporary compatibility fields for the current frontend.
             original_name: row.original_name
         })));
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// PUT /company/scans/:scanId/favorite
+exports.favoriteScan = async (req, res) => {
+    try {
+        const scan = await getAccessibleScan(req.params.scanId, req.user.id);
+
+        if (!scan)
+            return res.status(404).json({ error: "Scan not found" });
+
+        await pool.query(
+            `UPDATE scan_logs
+             SET favorited_at = COALESCE(favorited_at, NOW())
+             WHERE id = ?
+             AND company_id = ?`,
+            [req.params.scanId, req.user.id]
+        );
+
+        const updatedScan = await getAccessibleScan(req.params.scanId, req.user.id);
+
+        res.json({
+            message: "CV added to favorites",
+            scan: {
+                id: updatedScan.id,
+                favorited_at: updatedScan.favorited_at,
+                is_favorite: Boolean(updatedScan.favorited_at)
+            }
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// DELETE /company/scans/:scanId/favorite
+exports.unfavoriteScan = async (req, res) => {
+    try {
+        const scan = await getAccessibleScan(req.params.scanId, req.user.id);
+
+        if (!scan)
+            return res.status(404).json({ error: "Scan not found" });
+
+        await pool.query(
+            `UPDATE scan_logs
+             SET favorited_at = NULL
+             WHERE id = ?
+             AND company_id = ?`,
+            [req.params.scanId, req.user.id]
+        );
+
+        res.json({
+            message: "CV removed from favorites",
+            scan: {
+                id: Number(req.params.scanId),
+                favorited_at: null,
+                is_favorite: false
+            }
+        });
 
     } catch (err) {
         res.status(500).json({ error: err.message });

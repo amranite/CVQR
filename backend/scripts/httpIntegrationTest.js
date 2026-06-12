@@ -297,6 +297,7 @@ async function run() {
     const { data: scanData } = await request(`/qr/${qrData.token}`, {
         headers: authHeaders(companyToken)
     });
+    assert(scanData.scan_id, "Scan did not return scan id");
     assert(
         scanData.cv.startsWith("/cv/participation/"),
         "Scan did not return secure participation CV route"
@@ -315,6 +316,26 @@ async function run() {
         historyData.some((scan) => scan.participation_id === scanData.participation_id),
         "Company history missing active scan"
     );
+
+    const { data: favoriteData } = await request(`/company/scans/${scanData.scan_id}/favorite`, {
+        method: "PUT",
+        headers: authHeaders(companyToken)
+    });
+    assert(favoriteData.scan.is_favorite, "Favorite endpoint did not mark scan as favorite");
+
+    const { data: favoritesHistory } = await request("/company/scans?favorites=1", {
+        headers: authHeaders(companyToken)
+    });
+    assert(
+        favoritesHistory.some((scan) => scan.id === scanData.scan_id && scan.is_favorite),
+        "Favorites-only history missing favorited scan"
+    );
+
+    const { data: unfavoriteData } = await request(`/company/scans/${scanData.scan_id}/favorite`, {
+        method: "DELETE",
+        headers: authHeaders(companyToken)
+    });
+    assert(!unfavoriteData.scan.is_favorite, "Unfavorite endpoint did not clear favorite");
 
     const { data: participations } = await request(`/admin/events/${eventId}/participations`, {
         headers: authHeaders(adminToken)

@@ -305,15 +305,15 @@ async function seedDemo() {
     const noahClosedQrId = await createQrToken(noahClosedParticipationId, "demo-closed-noah-token");
 
     await pool.query(
-        `INSERT INTO scan_logs (company_id, event_id, participation_id, qr_token_id, scanned_at)
+        `INSERT INTO scan_logs (company_id, event_id, participation_id, qr_token_id, scanned_at, favorited_at)
          VALUES
-            (?, ?, ?, ?, ?),
-            (?, ?, ?, ?, ?),
-            (?, ?, ?, ?, ?)`,
+            (?, ?, ?, ?, ?, ?),
+            (?, ?, ?, ?, ?, ?),
+            (?, ?, ?, ?, ?, ?)`,
         [
-            users.company1.id, events.live.id, alexLiveParticipationId, alexQrId, mysqlDate(-hour(1)),
-            users.company1.id, events.live.id, mayaLiveParticipationId, mayaQrId, mysqlDate(-hour(0.5)),
-            users.company1.id, events.closed.id, noahClosedParticipationId, noahClosedQrId, mysqlDate(-day(29))
+            users.company1.id, events.live.id, alexLiveParticipationId, alexQrId, mysqlDate(-hour(1)), mysqlDate(-hour(0.95)),
+            users.company1.id, events.live.id, mayaLiveParticipationId, mayaQrId, mysqlDate(-hour(0.5)), null,
+            users.company1.id, events.closed.id, noahClosedParticipationId, noahClosedQrId, mysqlDate(-day(29)), null
         ]
     );
 

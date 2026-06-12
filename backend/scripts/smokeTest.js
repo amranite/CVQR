@@ -259,6 +259,7 @@ async function run() {
             params: { token: qrRes.body.token }
         });
         assertStatus(scanRes, 200, "assigned company scan");
+        assert(scanRes.body.scan_id, "scan should return scan log id");
         assert(scanRes.body.cv?.startsWith("/cv/participation/"), "scan should return secure participation CV URL");
 
         const companyHistoryRes = await call(companyController.getScans, {
@@ -269,6 +270,30 @@ async function run() {
             companyHistoryRes.body.some((scan) => scan.participation_id === scanRes.body.participation_id),
             "company history should include active-event scan"
         );
+
+        const favoriteScanRes = await call(companyController.favoriteScan, {
+            user: { id: ids.companyId, role: "company" },
+            params: { scanId: scanRes.body.scan_id }
+        });
+        assertStatus(favoriteScanRes, 200, "favorite scan");
+        assert(favoriteScanRes.body.scan.is_favorite, "favorite scan should mark scan as favorite");
+
+        const favoritesHistoryRes = await call(companyController.getScans, {
+            user: { id: ids.companyId, role: "company" },
+            query: { favorites: "1" }
+        });
+        assertStatus(favoritesHistoryRes, 200, "favorite scan history");
+        assert(
+            favoritesHistoryRes.body.some((scan) => scan.id === scanRes.body.scan_id && scan.is_favorite),
+            "favorites-only history should include favorited scan"
+        );
+
+        const unfavoriteScanRes = await call(companyController.unfavoriteScan, {
+            user: { id: ids.companyId, role: "company" },
+            params: { scanId: scanRes.body.scan_id }
+        });
+        assertStatus(unfavoriteScanRes, 200, "unfavorite scan");
+        assert(!unfavoriteScanRes.body.scan.is_favorite, "unfavorite should clear favorite state");
 
         const companyFileRes = await call(cvController.sendParticipationCvFile, {
             user: { id: ids.companyId, role: "company" },

@@ -135,6 +135,22 @@ select {
    color: var(--color-primary-hover);
 }
 
+.favorite-button {
+   border-color: #facc15;
+   color: #854d0e;
+}
+
+.favorite-button:hover,
+.favorite-button.is-favorite {
+   background-color: #fef9c3;
+   border-color: #eab308;
+   color: #713f12;
+}
+
+.favorite-button.is-favorite i {
+   color: #eab308;
+}
+
 .button-danger {
    background-color: var(--color-danger);
    border-color: var(--color-danger);
