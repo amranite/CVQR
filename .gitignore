@@ -14,7 +14,7 @@ pnpm-debug.log*
 logs/
 *.log
 
-# Build output
+# Build and test output
 dist/
 build/
 out/
@@ -48,9 +48,6 @@ Thumbs.db
 .nuxt/
 .svelte-kit/
 .vite/
-
-# Testing
-coverage/
 
 # Misc
 *.tgz

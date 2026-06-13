@@ -1,18 +1,16 @@
 {
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "multer": "^2.1.1",
-    "qrcode": "^1.5.4"
-  },
   "name": "cvqr",
   "version": "1.0.0",
   "description": "CVQR is a web app to easily share a CV with a QR code.",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm --prefix backend start",
+    "test": "npm --prefix backend test",
+    "smoke": "npm --prefix backend run smoke",
+    "http-test": "npm --prefix backend run http-test",
+    "db:clean": "npm --prefix backend run db:clean --",
+    "db:seed": "npm --prefix backend run db:seed",
+    "seed:demo": "npm --prefix backend run seed:demo"
   },
   "repository": {
     "type": "git",
