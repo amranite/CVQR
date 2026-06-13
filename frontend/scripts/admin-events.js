@@ -204,6 +204,7 @@ async function loadEvents() {
     });
 
     renderEvents(currentEvents);
+    CVQR.markRefreshed(refreshEventsButton);
 
     const editEventId = new URLSearchParams(window.location.search).get('edit');
     if (editEventId) {

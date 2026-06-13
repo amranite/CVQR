@@ -68,7 +68,10 @@ function renderVersions(versions) {
 
   versions.forEach(function (version) {
     const card = document.createElement('article');
-    card.className = 'list-card compact-row';
+    card.className = 'list-card version-card';
+
+    const content = document.createElement('div');
+    content.className = 'version-content';
 
     const title = document.createElement('h3');
     title.textContent = 'Version ' + version.version_number;
@@ -83,7 +86,7 @@ function renderVersions(versions) {
     }).join(' - ');
 
     const actionRow = document.createElement('div');
-    actionRow.className = 'button-row compact-actions';
+    actionRow.className = 'button-row version-actions';
 
     const openButton = document.createElement('button');
     openButton.type = 'button';
@@ -91,8 +94,9 @@ function renderVersions(versions) {
     openButton.textContent = 'Open';
     openButton.dataset.filePath = '/cv/version/' + version.id + '/file';
 
+    content.append(title, meta);
     actionRow.appendChild(openButton);
-    card.append(title, meta, actionRow);
+    card.append(content, actionRow);
     versionsList.appendChild(card);
   });
 }

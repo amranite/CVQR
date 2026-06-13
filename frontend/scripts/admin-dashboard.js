@@ -3,8 +3,6 @@ const refreshDashboardButton = document.querySelector('#refreshButton');
 const logoutButtonDashboard = document.querySelector('#logoutButton');
 const eventsMetric = document.querySelector('#eventsMetric');
 const eventsHint = document.querySelector('#eventsHint');
-const assignmentsMetric = document.querySelector('#assignmentsMetric');
-const assignmentsHint = document.querySelector('#assignmentsHint');
 const usersMetric = document.querySelector('#usersMetric');
 const usersHint = document.querySelector('#usersHint');
 const cvsMetric = document.querySelector('#cvsMetric');
@@ -75,7 +73,6 @@ async function loadDashboard() {
     }).length;
 
     setMetric(eventsMetric, eventsHint, events.length, liveEvents + ' live');
-    setMetric(assignmentsMetric, assignmentsHint, registrations.company_assignments.length, 'company event links');
     setMetric(usersMetric, usersHint, users.length, 'total accounts');
     setMetric(cvsMetric, cvsHint, cvs.length, 'student CV records');
     setMetric(
@@ -86,6 +83,7 @@ async function loadDashboard() {
     );
 
     renderPriorityEvents(events);
+    CVQR.markRefreshed(refreshDashboardButton);
   } catch (error) {
     CVQR.showMessage(dashboardMessage, error.message, 'error');
   }

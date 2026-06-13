@@ -69,8 +69,8 @@ function buildUserActions(user) {
   if (user.role === 'company' && user.company_assignments_count > 0) {
     const companiesLink = document.createElement('a');
     companiesLink.className = 'button button-secondary';
-    companiesLink.href = '/admin/assignments/';
-    companiesLink.append(CVQRAdmin.createIcon('fa-solid fa-building'), 'Assignments');
+    companiesLink.href = '/admin/registrations/';
+    companiesLink.append(CVQRAdmin.createIcon('fa-solid fa-clipboard-list'), 'Registrations');
     actionRow.appendChild(companiesLink);
   }
 
@@ -148,6 +148,7 @@ async function loadUsers() {
       headers: CVQR.authHeaders()
     });
     renderUsers(users);
+    CVQR.markRefreshed(refreshUsersButton);
   } catch (error) {
     CVQR.showMessage(usersMessage, error.message, 'error');
   }

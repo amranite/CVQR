@@ -274,6 +274,9 @@ async function loadDashboard(options) {
     renderOpenEvents(events, participation);
     renderQr(participation, qr);
     renderCompanyAccess(scans, participation);
+    CVQR.markRefreshed(refreshButton);
+    CVQR.markRefreshed(registrationRefreshButton);
+    CVQR.markRefreshed(refreshCompanyAccessButton);
   } catch (error) {
     CVQR.showMessage(studentHomeMessage, error.message, 'error');
   }
