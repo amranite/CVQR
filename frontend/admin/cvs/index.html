@@ -22,10 +22,10 @@
       <nav class="header-actions">
         <a class="button button-secondary" href="/admin/">Dashboard</a>
         <a class="button button-secondary" href="/admin/events/">Events</a>
-        <a class="button button-secondary" href="/admin/assignments/">Assignments</a>
         <a class="button button-secondary" href="/admin/users/">Users</a>
         <a class="button button-secondary is-active" href="/admin/cvs/">CVs</a>
         <a class="button button-secondary" href="/admin/registrations/">Registrations</a>
+        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
         <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
@@ -38,7 +38,6 @@
           <h2>Uploaded CVs</h2>
           <p id="cvCount" class="section-text">0 results</p>
         </div>
-        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
       </div>
       <div id="message" class="message hidden"></div>
       <div id="cvList" class="card-list"></div>

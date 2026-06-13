@@ -14,6 +14,12 @@
    --color-danger-border: #f3aa96;
 }
 
+@property --message-progress {
+   syntax: "<percentage>";
+   inherits: false;
+   initial-value: 100%;
+}
+
 * {
    box-sizing: border-box;
 }
@@ -135,6 +141,22 @@ select {
    color: var(--color-primary-hover);
 }
 
+#refreshButton.button-secondary,
+#registrationRefreshButton.button-secondary,
+#refreshCompanyAccessButton.button-secondary {
+   background-color: var(--color-success-bg);
+   border-color: var(--color-success-border);
+   color: var(--color-success-text);
+}
+
+#refreshButton.button-secondary:hover,
+#registrationRefreshButton.button-secondary:hover,
+#refreshCompanyAccessButton.button-secondary:hover {
+   background-color: #d9f2ec;
+   border-color: #75cfbc;
+   color: var(--color-success-text);
+}
+
 .favorite-button {
    border-color: #facc15;
    color: #854d0e;
@@ -192,9 +214,18 @@ select {
 }
 
 .message {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 0.85rem;
    margin-bottom: 1rem;
    padding: 0.8rem 1rem;
    border-radius: 0.5rem;
+   transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.message.hidden {
+   display: none;
 }
 
 .message.error {
@@ -207,6 +238,55 @@ select {
    background-color: var(--color-success-bg);
    color: var(--color-success-text);
    border: 1px solid var(--color-success-border);
+}
+
+.message.info {
+   background-color: #eef7ff;
+   color: #075985;
+   border: 1px solid #bae6fd;
+}
+
+.message.is-hiding {
+   opacity: 0;
+   transform: translateY(-0.15rem);
+}
+
+.message-text {
+   min-width: 0;
+}
+
+.message-timer {
+   --message-progress: 100%;
+   position: relative;
+   flex: 0 0 auto;
+   width: 1rem;
+   height: 1rem;
+   border-radius: 999px;
+   background: conic-gradient(currentColor var(--message-progress), transparent 0);
+   opacity: 0.82;
+   animation: message-countdown var(--message-duration, 10s) linear forwards;
+}
+
+.message-timer::after {
+   content: "";
+   position: absolute;
+   inset: 0.22rem;
+   border-radius: inherit;
+   background-color: #ffffff;
+}
+
+.message.success .message-timer::after {
+   background-color: var(--color-success-bg);
+}
+
+.message.info .message-timer::after {
+   background-color: #eef7ff;
+}
+
+@keyframes message-countdown {
+   to {
+      --message-progress: 0%;
+   }
 }
 
 .section-message {
@@ -593,18 +673,37 @@ select {
 }
 
 @media (min-width: 56em) {
+   .cards-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+   }
+}
+
+@media (min-width: 64em) {
    .header-inner {
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
    }
 
-   .cards-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+   .brand {
+      min-width: 0;
+   }
+
+   .header-actions {
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+   }
+
+   .header-actions .button {
+      white-space: nowrap;
+   }
+
+   .dashboard-header .header-actions>.button {
+      min-height: 3.65rem;
    }
 }
 
-@media (max-width: 55.99em) {
+@media (max-width: 63.99em) {
    .header-inner {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -648,6 +747,19 @@ select {
       justify-content: flex-start;
       width: 100%;
       padding: 0.62rem 0.75rem;
+   }
+
+   .header-actions.is-collapsible .refresh-control {
+      display: grid;
+      grid-template-columns: 1fr;
+      justify-items: stretch;
+      justify-content: stretch;
+      width: 100%;
+   }
+
+   .header-actions.is-collapsible .refresh-feedback {
+      padding-left: 0.1rem;
+      text-align: left;
    }
 }
 
@@ -802,6 +914,40 @@ select {
 .compact-row .button-row,
 .compact-actions {
    justify-content: flex-start;
+}
+
+.version-card {
+   grid-template-columns: minmax(0, 1fr) auto;
+   align-items: center;
+}
+
+.version-content {
+   min-width: 0;
+}
+
+.version-actions {
+   justify-content: flex-end;
+}
+
+.version-actions .button {
+   white-space: nowrap;
+}
+
+.refresh-feedback {
+   display: block;
+   margin-top: 0.28rem;
+   color: #52606d;
+   font-size: 0.85rem;
+   line-height: 1.2;
+   text-align: center;
+}
+
+.refresh-control {
+   display: inline-grid;
+   align-items: center;
+   justify-items: center;
+   justify-content: flex-end;
+   gap: 0.1rem;
 }
 
 .compact-section {
@@ -1040,7 +1186,7 @@ select {
 
 @media (min-width: 56em) {
    .dashboard-tiles {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
    }
 
    .qr-hero-layout {
