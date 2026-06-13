@@ -5,7 +5,6 @@
   "main": "server.js",
   "scripts": {
     "db:clean": "node scripts/cleanDatabase.js",
-    "db:sync": "node scripts/syncSchema.js",
     "http-test": "node scripts/httpIntegrationTest.js",
     "seed:demo": "node scripts/seedDemo.js",
     "smoke": "node scripts/smokeTest.js",
