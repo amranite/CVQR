@@ -22,6 +22,9 @@ coverage/
 backend/uploads/*
 !backend/uploads/.gitkeep
 
+# Local-only documentation
+docs/personal/
+
 # Temporary files
 tmp/
 temp/
