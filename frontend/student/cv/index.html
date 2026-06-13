@@ -35,7 +35,7 @@
         <div><dt>Uploaded at</dt><dd id="uploadedAt">-</dd></div>
         <div><dt>Last updated</dt><dd id="updatedAt">-</dd></div>
       </dl>
-      <div class="button-row">
+      <div class="button-row cv-primary-actions">
         <button type="button" id="downloadButton" class="button button-secondary">Open latest CV</button>
       </div>
 
@@ -61,9 +61,10 @@
         <p><strong>QR token</strong></p>
         <p id="qrToken" class="token-value">-</p>
       </div>
-      <div class="button-row">
+      <div class="button-row qr-action-row">
         <button type="button" id="generateQrButton" class="button">Activate QR</button>
       </div>
+      <div id="qrMessage" class="message hidden section-message"></div>
       <form id="replaceForm" class="stack-form" enctype="multipart/form-data">
         <div>
           <label for="newCv">New PDF</label>
@@ -73,6 +74,7 @@
           <button type="submit" class="button">Replace CV</button>
           <button type="button" id="deleteButton" class="button button-danger">Delete CV</button>
         </div>
+        <div id="replaceMessage" class="message hidden section-message"></div>
       </form>
     </section>
   </main>

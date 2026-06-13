@@ -16,15 +16,16 @@
         <i class="fa-solid fa-clipboard-list"></i>
         <div>
           <h1>Registrations</h1>
-          <p>View student participations and company event assignments.</p>
+          <p>Search for participations and event assignments.</p>
         </div>
       </a>
       <nav class="header-actions">
         <a class="button button-secondary" href="/admin/">Dashboard</a>
         <a class="button button-secondary" href="/admin/events/">Events</a>
-        <a class="button button-secondary" href="/admin/companies/">Companies</a>
+        <a class="button button-secondary" href="/admin/users/">Users</a>
         <a class="button button-secondary" href="/admin/cvs/">CVs</a>
         <a class="button button-secondary is-active" href="/admin/registrations/">Registrations</a>
+        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
         <button type="button" class="button logout-button" id="logoutButton">Log out</button>
       </nav>
     </div>
@@ -36,15 +37,51 @@
     <section class="card">
       <div class="section-head">
         <div>
+          <h2>Registration overview</h2>
+          <p id="registrationTotalCount" class="section-text">0 results</p>
+        </div>
+      </div>
+
+      <form id="registrationFilterForm" class="filter-form" role="search">
+        <div>
+          <label for="registrationSearch">Search</label>
+          <input type="search" id="registrationSearch" name="q" placeholder="Name, email, event, or location">
+        </div>
+        <div>
+          <label for="recordTypeFilter">Record type</label>
+          <select id="recordTypeFilter" name="type">
+            <option value="all">All records</option>
+            <option value="students">Student participations</option>
+            <option value="companies">Company assignments</option>
+          </select>
+        </div>
+        <div>
+          <label for="eventStatusFilter">Event status</label>
+          <select id="eventStatusFilter" name="status">
+            <option value="all">All statuses</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+        <div class="button-row filter-actions">
+          <button type="submit" class="button"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+          <button type="button" class="button button-secondary" id="clearRegistrationFiltersButton">Clear</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" id="studentRegistrationsSection">
+      <div class="section-head">
+        <div>
           <h2>Student participations</h2>
           <p id="studentRegistrationCount" class="section-text">0 results</p>
         </div>
-        <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
       </div>
       <div id="studentRegistrationsList" class="card-list compact-card-list"></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="companyAssignmentsSection">
       <div class="section-head">
         <div>
           <h2>Company assignments</h2>

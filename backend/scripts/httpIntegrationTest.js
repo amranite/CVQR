@@ -155,7 +155,7 @@ async function assertStaticPagesLoad() {
         "/admin/",
         "/admin/events/",
         "/admin/events/detail/",
-        "/admin/companies/",
+        "/admin/users/",
         "/admin/cvs/",
         "/admin/registrations/"
     ];
@@ -195,7 +195,7 @@ async function run() {
     await rememberRegisteredUsers();
 
     const adminToken = await login(adminEmail);
-    const studentToken = await login(studentEmail);
+    const studentToken = await login(studentEmail.toUpperCase());
     const companyToken = await login(companyEmail);
 
     await assertStaticPagesLoad();
@@ -211,6 +211,26 @@ async function run() {
     const companyUser = companyUsers.find((company) => company.email === companyEmail);
     assert(companyUser, "Admin company user list did not include integration company");
     const companyId = companyUser.id;
+
+    const { data: allUsers } = await request("/admin/users", {
+        headers: authHeaders(adminToken)
+    });
+    assert(
+        allUsers.some((user) => user.email === studentEmail && user.role === "student"),
+        "Admin users overview missing integration student"
+    );
+    assert(
+        allUsers.some((user) => user.email === companyEmail && user.role === "company"),
+        "Admin users overview missing integration company"
+    );
+
+    const { data: searchedUsers } = await request(`/admin/users?q=${encodeURIComponent("Integration Student " + suffix)}&role=student&activity=without_cv`, {
+        headers: authHeaders(adminToken)
+    });
+    assert(
+        searchedUsers.length === 1 && searchedUsers[0].email === studentEmail,
+        "Admin users search/filter did not return expected student"
+    );
 
     const { data: createEventData } = await request("/admin/events", {
         method: "POST",
@@ -272,10 +292,12 @@ async function run() {
         qrData.token === participationData.participation.qr.token,
         "Student QR token mismatch"
     );
+    let activeQrToken = qrData.token;
 
-    const { data: scanData } = await request(`/qr/${qrData.token}`, {
+    const { data: scanData } = await request(`/qr/${activeQrToken}`, {
         headers: authHeaders(companyToken)
     });
+    assert(scanData.scan_id, "Scan did not return scan id");
     assert(
         scanData.cv.startsWith("/cv/participation/"),
         "Scan did not return secure participation CV route"
@@ -294,6 +316,71 @@ async function run() {
         historyData.some((scan) => scan.participation_id === scanData.participation_id),
         "Company history missing active scan"
     );
+
+    const { data: favoriteData } = await request(`/company/scans/${scanData.scan_id}/favorite`, {
+        method: "PUT",
+        headers: authHeaders(companyToken)
+    });
+    assert(favoriteData.scan.is_favorite, "Favorite endpoint did not mark scan as favorite");
+
+    const { data: favoritesHistory } = await request("/company/scans?favorites=1", {
+        headers: authHeaders(companyToken)
+    });
+    assert(
+        favoritesHistory.some((scan) => scan.id === scanData.scan_id && scan.is_favorite),
+        "Favorites-only history missing favorited scan"
+    );
+
+    const { data: unfavoriteData } = await request(`/company/scans/${scanData.scan_id}/favorite`, {
+        method: "DELETE",
+        headers: authHeaders(companyToken)
+    });
+    assert(!unfavoriteData.scan.is_favorite, "Unfavorite endpoint did not clear favorite");
+
+    const { data: studentScans } = await request("/participations/me/scans", {
+        headers: authHeaders(studentToken)
+    });
+    assert(
+        studentScans.some((scan) => scan.id === scanData.scan_id && !scan.is_revoked),
+        "Student scan list missing active company access"
+    );
+
+    const { data: revokeData } = await request(`/participations/me/scans/${scanData.scan_id}/revoke`, {
+        method: "POST",
+        headers: authHeaders(studentToken)
+    });
+    assert(revokeData.scan.is_revoked, "Student revoke did not mark scan as revoked");
+    assert(revokeData.qr.token && revokeData.qr.token !== activeQrToken, "Student revoke did not rotate QR token");
+    activeQrToken = revokeData.qr.token;
+
+    const { data: revokedHistory } = await request("/company/scans", {
+        headers: authHeaders(companyToken)
+    });
+    assert(
+        !revokedHistory.some((scan) => scan.id === scanData.scan_id),
+        "Student-revoked scan remained visible to company"
+    );
+
+    const revokedFileResponse = await fetch(apiBaseUrl + scanData.cv, {
+        headers: authHeaders(companyToken)
+    });
+    assert(revokedFileResponse.status === 403, "Student-revoked CV file access was not blocked");
+
+    const oldQrResponse = await fetch(apiBaseUrl + `/qr/${qrData.token}`, {
+        headers: authHeaders(companyToken)
+    });
+    assert(oldQrResponse.status === 404, "Old QR token still worked after student revoke");
+
+    const { data: restoredScanData } = await request(`/qr/${activeQrToken}`, {
+        headers: authHeaders(companyToken)
+    });
+    assert(restoredScanData.scan_id === scanData.scan_id, "Restored scan did not reuse scan row");
+    assert(!restoredScanData.is_revoked, "Fresh QR scan did not restore company access");
+
+    const restoredFileResponse = await fetch(apiBaseUrl + scanData.cv, {
+        headers: authHeaders(companyToken)
+    });
+    assert(restoredFileResponse.ok, "Company could not fetch CV after fresh QR restore");
 
     const { data: participations } = await request(`/admin/events/${eventId}/participations`, {
         headers: authHeaders(adminToken)
@@ -344,7 +431,7 @@ async function run() {
         "Admin registrations overview missing company assignment"
     );
 
-    const closedScanResponse = await fetch(apiBaseUrl + `/qr/${qrData.token}`, {
+    const closedScanResponse = await fetch(apiBaseUrl + `/qr/${activeQrToken}`, {
         headers: authHeaders(companyToken)
     });
     assert(closedScanResponse.status === 403, "Closed event QR scan was not blocked");

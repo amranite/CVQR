@@ -22,7 +22,7 @@
       <nav class="header-actions">
         <a class="button button-secondary is-active" href="/admin/">Dashboard</a>
         <a class="button button-secondary" href="/admin/events/">Events</a>
-        <a class="button button-secondary" href="/admin/companies/">Companies</a>
+        <a class="button button-secondary" href="/admin/users/">Users</a>
         <a class="button button-secondary" href="/admin/cvs/">CVs</a>
         <a class="button button-secondary" href="/admin/registrations/">Registrations</a>
         <button type="button" class="button button-secondary" id="refreshButton"><i class="fa-solid fa-rotate"></i> Refresh</button>
@@ -41,11 +41,11 @@
         <strong id="eventsMetric">-</strong>
         <small id="eventsHint">Loading events</small>
       </a>
-      <a class="dashboard-tile" href="/admin/companies/">
-        <i class="fa-solid fa-building"></i>
-        <span>Companies</span>
-        <strong id="companiesMetric">-</strong>
-        <small id="companiesHint">Loading companies</small>
+      <a class="dashboard-tile" href="/admin/users/">
+        <i class="fa-solid fa-users"></i>
+        <span>Users</span>
+        <strong id="usersMetric">-</strong>
+        <small id="usersHint">Loading users</small>
       </a>
       <a class="dashboard-tile" href="/admin/cvs/">
         <i class="fa-solid fa-file-lines"></i>
@@ -67,7 +67,7 @@
           <h2>Live and upcoming events</h2>
           <p class="section-text">Events that currently need the most operational attention.</p>
         </div>
-        <a class="button" href="/admin/events/"><i class="fa-solid fa-arrow-right"></i> Manage events</a>
+        <a class="button" href="/admin/events/">Manage events</a>
       </div>
       <div id="priorityEventsList" class="card-list compact-card-list"></div>
     </section>

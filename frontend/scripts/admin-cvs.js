@@ -103,6 +103,7 @@ async function loadAdminCvs() {
     });
 
     renderCvList(rows);
+    CVQR.markRefreshed(refreshCvsButton);
   } catch (error) {
     CVQR.showMessage(adminMessage, error.message, 'error');
   }

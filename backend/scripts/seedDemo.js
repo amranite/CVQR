@@ -4,6 +4,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const pool = require("../config/db");
+const { configuredStudentDomains } = require("../utils/emailDomains");
 const { uploadDir } = require("../utils/cvFiles");
 
 const DEMO_PASSWORD = "DemoPassword123!";
@@ -132,6 +133,18 @@ async function removeExistingDemoData() {
     );
 
     await deleteFiles(fileRows.map((row) => row.file_path).filter(Boolean));
+}
+
+async function ensureStudentEmailDomains() {
+    for (const domain of configuredStudentDomains()) {
+        await pool.query(
+            `INSERT INTO student_email_domains (domain, is_active)
+             VALUES (?, 1)
+             ON DUPLICATE KEY UPDATE
+                domain = VALUES(domain)`,
+            [domain]
+        );
+    }
 }
 
 async function insertUsers() {
@@ -284,6 +297,7 @@ async function createQrToken(participationId, token) {
 
 async function seedDemo() {
     await removeExistingDemoData();
+    await ensureStudentEmailDomains();
 
     const users = await insertUsers();
     const events = await insertEvents(users.admin.id);
@@ -305,15 +319,15 @@ async function seedDemo() {
     const noahClosedQrId = await createQrToken(noahClosedParticipationId, "demo-closed-noah-token");
 
     await pool.query(
-        `INSERT INTO scan_logs (company_id, event_id, participation_id, qr_token_id, scanned_at)
+        `INSERT INTO scan_logs (company_id, event_id, participation_id, qr_token_id, scanned_at, favorited_at)
          VALUES
-            (?, ?, ?, ?, ?),
-            (?, ?, ?, ?, ?),
-            (?, ?, ?, ?, ?)`,
+            (?, ?, ?, ?, ?, ?),
+            (?, ?, ?, ?, ?, ?),
+            (?, ?, ?, ?, ?, ?)`,
         [
-            users.company1.id, events.live.id, alexLiveParticipationId, alexQrId, mysqlDate(-hour(1)),
-            users.company1.id, events.live.id, mayaLiveParticipationId, mayaQrId, mysqlDate(-hour(0.5)),
-            users.company1.id, events.closed.id, noahClosedParticipationId, noahClosedQrId, mysqlDate(-day(29))
+            users.company1.id, events.live.id, alexLiveParticipationId, alexQrId, mysqlDate(-hour(1)), mysqlDate(-hour(0.95)),
+            users.company1.id, events.live.id, mayaLiveParticipationId, mayaQrId, mysqlDate(-hour(0.5)), null,
+            users.company1.id, events.closed.id, noahClosedParticipationId, noahClosedQrId, mysqlDate(-day(29)), null
         ]
     );
 

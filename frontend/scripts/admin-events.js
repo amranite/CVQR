@@ -110,7 +110,7 @@ function buildEventCard(event) {
   const detailsLink = document.createElement('a');
   detailsLink.className = 'button';
   detailsLink.href = '/admin/events/detail/?id=' + encodeURIComponent(event.id);
-  detailsLink.append(CVQRAdmin.createIcon('fa-solid fa-arrow-right'), 'Details');
+  detailsLink.textContent = 'Details';
 
   const editButton = document.createElement('button');
   editButton.type = 'button';
@@ -204,6 +204,7 @@ async function loadEvents() {
     });
 
     renderEvents(currentEvents);
+    CVQR.markRefreshed(refreshEventsButton);
 
     const editEventId = new URLSearchParams(window.location.search).get('edit');
     if (editEventId) {

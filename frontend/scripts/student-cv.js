@@ -4,6 +4,8 @@ const deleteButton = document.querySelector('#deleteButton');
 const logoutButtonCv = document.querySelector('#logoutButton');
 const downloadButton = document.querySelector('#downloadButton');
 const generateQrButtonCv = document.querySelector('#generateQrButton');
+const qrMessage = document.querySelector('#qrMessage');
+const replaceMessage = document.querySelector('#replaceMessage');
 const versionsList = document.querySelector('#versionsList');
 
 let latestCvFilePath = '';
@@ -19,6 +21,11 @@ function setText(selector, value) {
   if (element) {
     element.textContent = value || '-';
   }
+}
+
+function capitalize(value) {
+  const text = String(value || '');
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
 }
 
 async function requestOptional(path) {
@@ -61,7 +68,10 @@ function renderVersions(versions) {
 
   versions.forEach(function (version) {
     const card = document.createElement('article');
-    card.className = 'list-card';
+    card.className = 'list-card version-card';
+
+    const content = document.createElement('div');
+    content.className = 'version-content';
 
     const title = document.createElement('h3');
     title.textContent = 'Version ' + version.version_number;
@@ -76,7 +86,7 @@ function renderVersions(versions) {
     }).join(' - ');
 
     const actionRow = document.createElement('div');
-    actionRow.className = 'button-row';
+    actionRow.className = 'button-row version-actions';
 
     const openButton = document.createElement('button');
     openButton.type = 'button';
@@ -84,8 +94,9 @@ function renderVersions(versions) {
     openButton.textContent = 'Open';
     openButton.dataset.filePath = '/cv/version/' + version.id + '/file';
 
+    content.append(title, meta);
     actionRow.appendChild(openButton);
-    card.append(title, meta, actionRow);
+    card.append(content, actionRow);
     versionsList.appendChild(card);
   });
 }
@@ -93,7 +104,7 @@ function renderVersions(versions) {
 function renderParticipation(participation, qrData) {
   setText('#eventName', participation && participation.event ? participation.event.name : '-');
   setText('#eventLocation', participation && participation.event ? participation.event.location : '-');
-  setText('#eventStatus', participation && participation.event ? participation.event.status : '-');
+  setText('#eventStatus', participation && participation.event ? capitalize(participation.event.status) : '-');
 
   const qr = qrData || (participation && participation.qr ? participation.qr : null);
   const qrUrl = qr && qr.qrUrl ? qr.qrUrl : '';
@@ -129,6 +140,7 @@ async function loadCv() {
 async function handleReplaceSubmit(event) {
   event.preventDefault();
   CVQR.showMessage(studentCvMessage, '', 'error');
+  CVQR.showMessage(replaceMessage, '', 'error');
 
   const formData = new FormData(replaceForm);
 
@@ -139,11 +151,11 @@ async function handleReplaceSubmit(event) {
       body: formData
     });
 
-    CVQR.showMessage(studentCvMessage, data.message || 'CV version uploaded.', 'success');
     replaceForm.reset();
     await loadCv();
+    CVQR.showMessage(replaceMessage, data.message || 'CV version uploaded.', 'success');
   } catch (error) {
-    CVQR.showMessage(studentCvMessage, error.message, 'error');
+    CVQR.showMessage(replaceMessage, error.message, 'error');
   }
 }
 
@@ -186,16 +198,18 @@ async function handleDownloadLatest() {
 }
 
 async function handleGenerateQr() {
+  CVQR.showMessage(qrMessage, '', 'error');
+
   try {
     const data = await CVQR.request('/participations/me/qr', {
       method: 'POST',
       headers: CVQR.authHeaders()
     });
 
-    CVQR.showMessage(studentCvMessage, data.message || 'QR code is ready.', 'success');
     await loadCv();
+    CVQR.showMessage(qrMessage, data.message || 'QR code is ready.', 'success');
   } catch (error) {
-    CVQR.showMessage(studentCvMessage, error.message, 'error');
+    CVQR.showMessage(qrMessage, error.message, 'error');
   }
 }
 

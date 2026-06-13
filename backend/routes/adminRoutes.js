@@ -15,6 +15,7 @@ const {
     getEventScans,
     getEvents,
     getRegistrationsOverview,
+    getUsers,
     openEvent,
     unassignCompanyFromEvent,
     updateEventCompanies,
@@ -25,6 +26,7 @@ router.get("/cvs", auth, allowRoles("admin"), getAllCvs);
 router.delete("/cv/:studentId", auth, allowRoles("admin"), deleteStudentCv);
 router.get("/companies", auth, allowRoles("admin"), getCompanyUsers);
 router.get("/registrations", auth, allowRoles("admin"), getRegistrationsOverview);
+router.get("/users", auth, allowRoles("admin"), getUsers);
 
 router.get("/events", auth, allowRoles("admin"), getEvents);
 router.post("/events", auth, allowRoles("admin"), createEvent);

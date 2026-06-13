@@ -1,4 +1,9 @@
 (function () {
+  const DISMISSABLE_MESSAGE_TYPES = new Set(['success', 'info']);
+  const MESSAGE_DISMISS_DELAY = 10000;
+  const MESSAGE_FADE_DELAY = 180;
+  const MESSAGE_STATE_CLASSES = new Set(['hidden', 'error', 'success', 'info', 'is-hiding', 'is-dismissable']);
+
   function apiBase() {
     return (window.CVQR_CONFIG && window.CVQR_CONFIG.API_BASE_URL) || 'http://localhost:3000';
   }
@@ -135,19 +140,131 @@
     return data;
   }
 
+  function getMessageBaseClass(element) {
+    if (!element.dataset.messageBaseClass) {
+      const baseClasses = Array.from(element.classList).filter(function (className) {
+        return !MESSAGE_STATE_CLASSES.has(className);
+      });
+
+      if (!baseClasses.includes('message')) {
+        baseClasses.unshift('message');
+      }
+
+      element.dataset.messageBaseClass = baseClasses.join(' ');
+    }
+
+    return element.dataset.messageBaseClass || 'message';
+  }
+
+  function clearMessageTimers(element) {
+    if (element.cvqrMessageTimer) {
+      window.clearTimeout(element.cvqrMessageTimer);
+      element.cvqrMessageTimer = null;
+    }
+
+    if (element.cvqrMessageFadeTimer) {
+      window.clearTimeout(element.cvqrMessageFadeTimer);
+      element.cvqrMessageFadeTimer = null;
+    }
+  }
+
+  function resetMessageClass(element, type, hidden) {
+    element.className = getMessageBaseClass(element);
+
+    if (hidden) {
+      element.classList.add('hidden');
+      return;
+    }
+
+    element.classList.add(type || 'error');
+  }
+
   function showMessage(element, message, type) {
     if (!element) {
       return;
     }
 
+    clearMessageTimers(element);
+    element.style.removeProperty('--message-duration');
+
     if (!message) {
       element.textContent = '';
-      element.className = 'message hidden';
+      resetMessageClass(element, type, true);
       return;
     }
 
-    element.textContent = message;
-    element.className = 'message ' + (type || 'error');
+    const resolvedType = type || 'error';
+    const shouldDismiss = DISMISSABLE_MESSAGE_TYPES.has(resolvedType);
+    const text = document.createElement('span');
+
+    text.className = 'message-text';
+    text.textContent = message;
+
+    element.textContent = '';
+    resetMessageClass(element, resolvedType, false);
+    element.appendChild(text);
+
+    if (!shouldDismiss) {
+      return;
+    }
+
+    const timer = document.createElement('span');
+    timer.className = 'message-timer';
+    timer.setAttribute('aria-hidden', 'true');
+
+    element.classList.add('is-dismissable');
+    element.style.setProperty('--message-duration', MESSAGE_DISMISS_DELAY + 'ms');
+    element.appendChild(timer);
+
+    element.cvqrMessageTimer = window.setTimeout(function () {
+      element.classList.add('is-hiding');
+      element.cvqrMessageFadeTimer = window.setTimeout(function () {
+        showMessage(element, '', resolvedType);
+      }, MESSAGE_FADE_DELAY);
+    }, MESSAGE_DISMISS_DELAY);
+  }
+
+  function ensureRefreshControl(button) {
+    if (!button.parentNode) {
+      return null;
+    }
+
+    if (button.parentElement && button.parentElement.classList.contains('refresh-control')) {
+      return button.parentElement;
+    }
+
+    const control = document.createElement('span');
+    control.className = 'refresh-control';
+    button.parentNode.insertBefore(control, button);
+    control.appendChild(button);
+    return control;
+  }
+
+  function markRefreshed(button, refreshedAt) {
+    if (!button) {
+      return;
+    }
+
+    const control = ensureRefreshControl(button);
+
+    if (!control) {
+      return;
+    }
+
+    let feedback = control.querySelector('.refresh-feedback');
+
+    if (!feedback || !feedback.isConnected) {
+      feedback = document.createElement('span');
+      feedback.className = 'refresh-feedback';
+      feedback.setAttribute('aria-live', 'polite');
+      control.appendChild(feedback);
+    }
+
+    feedback.textContent = 'Last refresh: ' + new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(refreshedAt || new Date());
   }
 
   function requireRole(expectedRole, redirectPage) {
@@ -397,6 +514,7 @@
     authHeaders,
     request,
     showMessage,
+    markRefreshed,
     requireRole,
     redirectByRole,
     formatDateTime,

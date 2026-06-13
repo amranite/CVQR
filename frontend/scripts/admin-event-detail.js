@@ -14,6 +14,7 @@ const participationCount = document.querySelector('#participationCount');
 const participationsList = document.querySelector('#participationsList');
 const scanCount = document.querySelector('#scanCount');
 const scansList = document.querySelector('#scansList');
+const refreshEventDetailButton = document.querySelector('#refreshButton');
 const logoutButtonEventDetail = document.querySelector('#logoutButton');
 
 const eventId = new URLSearchParams(window.location.search).get('id');
@@ -122,6 +123,14 @@ function buildScanCard(item) {
   CVQRAdmin.appendMeta(card, item.student_email);
   CVQRAdmin.appendMeta(card, 'Company: ' + [item.company_name, item.company_email].filter(Boolean).join(' - '));
   CVQRAdmin.appendMeta(card, 'Scanned at ' + CVQR.formatDateTime(item.scanned_at));
+  if (item.student_revoked_at) {
+    CVQRAdmin.appendMeta(card, item.is_revoked
+      ? 'Student revoked access at ' + CVQR.formatDateTime(item.student_revoked_at)
+      : 'Student last revoked access at ' + CVQR.formatDateTime(item.student_revoked_at));
+  }
+  if (item.student_restored_at) {
+    CVQRAdmin.appendMeta(card, 'Access restored at ' + CVQR.formatDateTime(item.student_restored_at));
+  }
   CVQRAdmin.appendMeta(card, item.scanned_qr_token ? 'QR token: ' + item.scanned_qr_token : '');
   return card;
 }
@@ -229,6 +238,7 @@ async function loadEventDetail(options) {
     renderCompanyAssignments(event, companyUsers);
     renderParticipations(participations);
     renderScans(scans);
+    CVQR.markRefreshed(refreshEventDetailButton);
   } catch (error) {
     CVQR.showMessage(eventDetailMessage, error.message, 'error');
   }
@@ -238,6 +248,7 @@ if (CVQRAdmin.requireAdmin()) {
   loadEventDetail();
   lifecycleDetailButton.addEventListener('click', changeEventStatus);
   saveAssignmentsButton.addEventListener('click', saveCompanyAssignments);
+  refreshEventDetailButton.addEventListener('click', loadEventDetail);
   selectAllCompaniesButton.addEventListener('click', function () {
     companiesChecklist.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
       checkbox.checked = true;
