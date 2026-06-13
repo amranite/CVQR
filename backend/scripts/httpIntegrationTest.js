@@ -155,7 +155,7 @@ async function assertStaticPagesLoad() {
         "/admin/",
         "/admin/events/",
         "/admin/events/detail/",
-        "/admin/companies/",
+        "/admin/assignments/",
         "/admin/users/",
         "/admin/cvs/",
         "/admin/registrations/"

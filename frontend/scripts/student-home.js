@@ -13,6 +13,7 @@ const companyAccessCount = document.querySelector('#companyAccessCount');
 const companyAccessList = document.querySelector('#companyAccessList');
 const refreshCompanyAccessButton = document.querySelector('#refreshCompanyAccessButton');
 const generateQrButton = document.querySelector('#generateQrButton');
+const qrMessage = document.querySelector('#qrMessage');
 const cvGuidance = document.querySelector('#cvGuidance');
 
 let latestCvPath = '';
@@ -326,6 +327,8 @@ async function registerForEvent(eventId, eventName) {
 }
 
 async function handleGenerateQr() {
+  CVQR.showMessage(qrMessage, '', 'error');
+
   try {
     const data = await CVQR.request('/participations/me/qr', {
       method: 'POST',
@@ -333,9 +336,9 @@ async function handleGenerateQr() {
     });
 
     await loadDashboard({ preserveMessage: true });
-    CVQR.showMessage(studentHomeMessage, data.message || 'QR code is ready.', 'success');
+    CVQR.showMessage(qrMessage, data.message || 'QR code is ready.', 'success');
   } catch (error) {
-    CVQR.showMessage(studentHomeMessage, error.message, 'error');
+    CVQR.showMessage(qrMessage, error.message, 'error');
   }
 }
 

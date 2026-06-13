@@ -69,7 +69,7 @@ function buildUserActions(user) {
   if (user.role === 'company' && user.company_assignments_count > 0) {
     const companiesLink = document.createElement('a');
     companiesLink.className = 'button button-secondary';
-    companiesLink.href = '/admin/companies/';
+    companiesLink.href = '/admin/assignments/';
     companiesLink.append(CVQRAdmin.createIcon('fa-solid fa-building'), 'Assignments');
     actionRow.appendChild(companiesLink);
   }
