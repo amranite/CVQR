@@ -17,6 +17,34 @@ let html5QrCode = null;
 let scannerRunning = false;
 let hasActiveEventAssignment = false;
 
+const scannerCameraConfig = {
+  fps: 10,
+  qrbox: { width: 250, height: 250 },
+  aspectRatio: 1.3333333
+};
+
+function getRearCameraId(cameras) {
+  for (let i = 0; i < cameras.length; i += 1) {
+    const label = (cameras[i].label || '').toLowerCase();
+
+    if (label.includes('back') || label.includes('rear') || label.includes('environment')) {
+      return cameras[i].id;
+    }
+  }
+
+  return '';
+}
+
+function getCameraStartTarget(cameras) {
+  const rearCameraId = getRearCameraId(cameras);
+
+  if (rearCameraId) {
+    return rearCameraId;
+  }
+
+  return { facingMode: 'environment' };
+}
+
 function handleCompanyLogout() {
   stopCamera();
   CVQR.clearSession();
@@ -95,24 +123,9 @@ async function startCamera() {
       return;
     }
 
-    let cameraId = cameras[0].id;
-
-    for (let i = 0; i < cameras.length; i += 1) {
-      const label = (cameras[i].label || '').toLowerCase();
-
-      if (label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('front')) {
-        cameraId = cameras[i].id;
-        break;
-      }
-    }
-
     await html5QrCode.start(
-      cameraId,
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.3333333
-      },
+      getCameraStartTarget(cameras),
+      scannerCameraConfig,
       handleScanSuccess,
       handleScanError
     );
