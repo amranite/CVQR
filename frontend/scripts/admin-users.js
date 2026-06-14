@@ -168,6 +168,8 @@ if (CVQRAdmin.requireAdmin()) {
     event.preventDefault();
     loadUsers();
   });
+  roleFilter.addEventListener('change', loadUsers);
+  activityFilter.addEventListener('change', loadUsers);
   refreshUsersButton.addEventListener('click', loadUsers);
   clearFiltersButton.addEventListener('click', clearFilters);
   logoutButtonUsers.addEventListener('click', CVQRAdmin.handleLogout);
