@@ -126,7 +126,7 @@ The company scanner page supports three options:
 For local demos, the token input is the most reliable. Example:
 
 ```text
-demo-emma-current-token
+http://localhost:3000/qr/demo-emma-current-token
 ```
 
 After a successful scan, the app opens the scanned CV view.

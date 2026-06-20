@@ -41,7 +41,7 @@ BASE_URL=http://localhost:3000
 STUDENT_EMAIL_DOMAINS=school.com
 ```
 
-`BASE_URL` is used to build QR URLs. Use `http://localhost:3000` for local development unless you are exposing the app through a tunnel.
+`BASE_URL` is used to build public QR landing page URLs. Use `http://localhost:3000` for local development unless you are exposing the app through a tunnel.
 
 ## Database Setup
 

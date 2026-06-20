@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const { HttpError } = require("./httpError");
 
 function buildQrUrl(token) {
-    return `${process.env.BASE_URL}/api/qr/${token}`;
+    return `${process.env.BASE_URL}/qr/${token}`;
 }
 
 async function buildQrPayload(token) {

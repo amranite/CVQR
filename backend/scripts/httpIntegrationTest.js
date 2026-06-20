@@ -147,6 +147,7 @@ async function assertStaticPagesLoad() {
         "/",
         "/register/",
         "/login/",
+        "/qr/demo-token",
         "/student/",
         "/student/cv/",
         "/company/",

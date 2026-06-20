@@ -110,7 +110,8 @@ flowchart TD
 
 When a company scans a token:
 
-1. The `/api/qr/:token` route requires a company JWT.
+1. The public `/qr/:token` page handles camera/browser opens.
+2. The `/api/qr/:token` route requires a company JWT.
 2. The token is resolved to an active participation.
 3. The event must be open and active by date window.
 4. The company must be assigned to that event.

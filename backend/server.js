@@ -25,6 +25,10 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/participations", participationRoutes);
 
+app.get("/qr/:token", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/qr/index.html"));
+});
+
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 app.get("/", (req, res) => {

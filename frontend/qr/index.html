@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVQR - QR access</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="CVQR home">
+        <i class="fa-solid fa-file-lines"></i>
+        <div>
+          <h1>CVQR</h1>
+          <p>QR access</p>
+        </div>
+      </a>
+      <nav class="header-actions">
+        <a class="button button-secondary" href="/login/">Log in</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container page-main narrow-page">
+    <section class="card qr-landing-card">
+      <span class="eyebrow">Protected link</span>
+      <h2>This QR link is protected</h2>
+      <p class="section-text">
+        This link is meant for company representatives using CVQR.
+        If you opened it directly, copied it from somewhere, or scanned it with a phone camera, you are in the right place.
+      </p>
+
+      <div class="notice-panel notice-panel-danger">
+        <div class="notice-icon" aria-hidden="true">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div>
+          <h3>Next step</h3>
+          <p>
+            Log in with a company account to continue scanning in CVQR.
+          </p>
+        </div>
+      </div>
+
+      <div class="button-row qr-landing-actions">
+        <a class="button" href="/login/">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Log in
+        </a>
+        <a class="button button-secondary" href="/">
+          <i class="fa-solid fa-house"></i>
+          Home
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script src="/scripts/config.js"></script>
+  <script src="/scripts/utils.js"></script>
+</body>
+
+</html>

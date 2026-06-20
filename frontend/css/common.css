@@ -1172,6 +1172,48 @@ select {
    gap: 1rem;
 }
 
+.qr-landing-card {
+   border-color: #a9d8ce;
+   box-shadow: 0 0.65rem 1.5rem rgba(60, 180, 151, 0.14);
+}
+
+.notice-panel {
+   display: grid;
+   grid-template-columns: auto 1fr;
+   gap: 1rem;
+   margin: 1.25rem 0;
+   padding: 1rem 1.1rem;
+   border: 1px solid #c9e9e2;
+   border-radius: 0.75rem;
+   background: linear-gradient(135deg, #f0fbf8 0%, #f8fffd 100%);
+}
+
+.notice-panel-danger {
+   border-color: var(--color-danger-border);
+   background: linear-gradient(135deg, #fff4ef 0%, #fffaf8 100%);
+}
+
+.notice-panel h3 {
+   margin: 0 0 0.25rem;
+}
+
+.notice-panel p {
+   margin: 0;
+   color: #52606d;
+}
+
+.notice-icon {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 3rem;
+   height: 3rem;
+   border-radius: 999px;
+   background-color: var(--color-danger-bg);
+   color: var(--color-danger-text);
+   font-size: 1.1rem;
+}
+
 @media (min-width: 40em) {
    .dashboard-tiles {
       grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -339,6 +339,10 @@
       return trimmed.split('/qr/')[1].split(/[?#]/)[0];
     }
 
+    if (trimmed.includes('/api/qr/')) {
+      return trimmed.split('/api/qr/')[1].split(/[?#]/)[0];
+    }
+
     return trimmed;
   }
 
