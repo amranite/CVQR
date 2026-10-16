@@ -4,9 +4,8 @@ This guide explains how to run CVQR locally, reset the database, seed demo data,
 
 ## Requirements
 
-- Node.js and npm
-- MySQL
-- A local database user that can create and reset the `cvqr` database
+- Git and Node.js 24 or newer (includes npm)
+- Docker with Compose for the simplest local MySQL setup, or a separate MySQL 8 server
 
 The backend runs on port `3000` by default.
 
@@ -15,37 +14,40 @@ The backend runs on port `3000` by default.
 From the repository root:
 
 ```bash
-npm --prefix backend install
+npm ci --prefix backend
 ```
 
 The root `package.json` mainly delegates commands to `backend/package.json`.
 
 ## Environment Configuration
 
-Copy the backend example environment file:
-
-```bash
-cp backend/.env.example backend/.env
-```
-
-Configure:
+Create `backend/.env` with a text editor. For the Docker database in this repository, use:
 
 ```text
 DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
+DB_PORT=3307
+DB_USER=root
+DB_PASSWORD=cvqr
 DB_NAME=cvqr
-JWT_SECRET=change-me
+JWT_SECRET=replace-with-a-long-random-local-secret
 BASE_URL=http://localhost:3000
 STUDENT_EMAIL_DOMAINS=school.com
 ```
 
 `BASE_URL` is used to build public QR landing page URLs. Use `http://localhost:3000` for local development unless you are exposing the app through a tunnel.
 
+The credentials above are for the disposable local Docker database. If you use an existing MySQL server, set `DB_HOST`, `DB_PORT`, `DB_USER`, and `DB_PASSWORD` to match it, create the `cvqr` database, and apply `backend/config/schema.sql` before seeding. Never point the demo reset commands at a database containing data you want to keep.
+
 ## Database Setup
 
-The schema file is:
+Start the included MySQL service from the repository root:
+
+```bash
+docker compose up -d db
+docker compose exec db mysqladmin ping -h 127.0.0.1 -u root -pcvqr
+```
+
+If MySQL is still starting, repeat the ping command. Docker applies the schema on first creation of its database volume. The schema file is:
 
 ```text
 backend/config/schema.sql
@@ -53,7 +55,13 @@ backend/config/schema.sql
 
 It is a destructive development reset schema. It drops and recreates the application tables, so do not run it against real production data.
 
-The easiest local reset flow is:
+For a fresh database, seed the demo directly:
+
+```bash
+npm run db:seed
+```
+
+For an existing **disposable** CVQR database with the current schema, the reset flow is:
 
 ```bash
 npm run db:clean -- --yes
@@ -61,6 +69,8 @@ npm run db:seed
 ```
 
 The seed creates demo users, events, CVs, participations, QR tokens, assignments, scans, favorites, revoked scans, and closed-event history.
+
+`db:clean` deletes all application records and files in `backend/uploads`, including files you uploaded yourself. If the Docker volume has an outdated schema, `db:clean` cannot migrate it. Recreate only a disposable demo volume or apply the current schema manually after backing up anything needed.
 
 ## Run The App
 
@@ -135,10 +145,9 @@ node --check frontend/scripts/company-scan.js
 
 ## Common Development Flow
 
-1. Reset and seed demo data:
+1. Seed the disposable demo database (or use the reset flow above if you need to clear it):
 
 ```bash
-npm run db:clean -- --yes
 npm run db:seed
 ```
 
@@ -160,6 +169,7 @@ npm start
 - The frontend stores JWTs in `localStorage`.
 - `/db-test` exists for development and should be removed or guarded before production.
 - Camera QR scanning usually requires a secure origin in real browsers. Localhost normally works; phone demos may need an HTTPS tunnel.
+- The frontend calls the API at the same origin by default. A saved `cvqr_api_base` browser setting overrides this; remove it if it points to an old server.
 
 ## Real Phone Camera Demo
 
@@ -167,15 +177,14 @@ For a phone demo, expose the local server through a temporary HTTPS tunnel such 
 
 General flow:
 
-1. Start CVQR locally:
+1. Start the database and seed the demo locally:
 
 ```bash
-npm run db:clean -- --yes
+docker compose up -d db
 npm run db:seed
-npm start
 ```
 
-2. In another terminal, expose port `3000` through an HTTPS tunnel. With `cloudflared`, the command is:
+2. Start CVQR with `npm start`. In another terminal, expose port `3000` through an HTTPS tunnel. With `cloudflared`, the command is:
 
 ```bash
 cloudflared tunnel --url http://localhost:3000
@@ -193,21 +202,12 @@ https://example-random.trycloudflare.com
 BASE_URL=https://example-random.trycloudflare.com
 ```
 
-5. Restart and reseed so demo QR URLs use the new base URL:
+5. Restart `npm start` so generated QR URLs use the new base URL. The seed data does not need to be recreated.
 
 ```bash
-npm run db:clean -- --yes
-npm run db:seed
 npm start
 ```
 
-6. Make sure the frontend API base also points to the tunnel. The current frontend default is `http://localhost:3000`, so on the phone either set this in the browser console:
-
-```js
-localStorage.setItem('cvqr_api_base', 'https://example-random.trycloudflare.com');
-location.reload();
-```
-
-or temporarily change `frontend/scripts/config.js` to use `window.location.origin` as the fallback for the demo.
+6. Open the HTTPS URL on the phone. The frontend uses that origin for API calls automatically. If this browser was used for an older demo with a saved `cvqr_api_base`, clear that setting first.
 
 Keep the local backend and tunnel process running during the presentation.

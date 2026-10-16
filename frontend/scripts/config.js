@@ -1,9 +1,4 @@
-// This is for local development.
+// The frontend and API are served from the same origin, including HTTPS tunnels.
 window.CVQR_CONFIG = {
-  API_BASE_URL: localStorage.getItem('cvqr_api_base') || 'http://localhost:3000'
+  API_BASE_URL: localStorage.getItem('cvqr_api_base') || window.location.origin
 };
-
-// This is for demonstration purposes.
-// window.CVQR_CONFIG = {
-//   API_BASE_URL: localStorage.getItem('cvqr_api_base') || window.location.origin
-// };

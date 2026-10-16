@@ -6,7 +6,7 @@ services:
       MYSQL_ROOT_PASSWORD: cvqr
       MYSQL_DATABASE: cvqr
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - cvqr_db_data:/var/lib/mysql
       - ./backend/config/schema.sql:/docker-entrypoint-initdb.d/schema.sql
